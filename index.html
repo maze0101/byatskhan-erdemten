@@ -723,6 +723,14 @@ function App() {
           0%, 100% { opacity: 0.85; transform: scale(1); }
           50% { opacity: 1; transform: scale(1.04); }
         }
+        @keyframes moonFloat {
+          0%, 100% { transform: translateY(0) rotate(-6deg); }
+          50% { transform: translateY(-10px) rotate(6deg); }
+        }
+        @keyframes moonFloatGlow {
+          0%, 100% { transform: translateY(0) rotate(-6deg) scale(1); opacity: 0.9; }
+          50% { transform: translateY(-10px) rotate(6deg) scale(1.08); opacity: 1; }
+        }
         @keyframes twinkle {
           0%, 100% { opacity: 0.25; }
           50% { opacity: 1; }
@@ -1717,7 +1725,10 @@ function LullabyScreen({ isPlaying, activeLullaby, onSelect }) {
         style={{
           fontSize: 70,
           marginBottom: 10,
-          animation: isPlaying ? "moonGlow 2.6s ease-in-out infinite" : "none",
+          display: "inline-block",
+          animation: isPlaying
+            ? "moonFloatGlow 2.6s ease-in-out infinite"
+            : "moonFloat 4s ease-in-out infinite",
         }}
       >
         🌙
