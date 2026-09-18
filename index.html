@@ -279,6 +279,7 @@ function App() {
   const [countingFeedback, setCountingFeedback] = useState(null);
   const [isPlayingLullaby, setIsPlayingLullaby] = useState(false);
   const [activeLullaby, setActiveLullaby] = useState("steppe");
+  const [sleepMinutes, setSleepMinutes] = useState(null);
   const theme = getTheme(profile);
   const audioCtxRef = useRef(null);
   const lullabyTimeoutRef = useRef(null);
@@ -287,6 +288,7 @@ function App() {
   const noiseSourceRef = useRef(null);
   const noiseGainRef = useRef(null);
   const audioFileRef = useRef(null);
+  const sleepTimeoutRef = useRef(null);
 
   function bumpMascot() {
     setHop(true);
@@ -603,9 +605,29 @@ function App() {
     audioFileRef.current = audio;
   }
 
+  function setLullabySleepTimer(minutes) {
+    if (sleepTimeoutRef.current) {
+      clearTimeout(sleepTimeoutRef.current);
+      sleepTimeoutRef.current = null;
+    }
+    setSleepMinutes(minutes);
+    if (minutes) {
+      sleepTimeoutRef.current = setTimeout(() => {
+        sleepTimeoutRef.current = null;
+        stopLullaby();
+        setCaption("Тайван нойрсоорой... 💤");
+      }, minutes * 60 * 1000);
+    }
+  }
+
   function stopLullaby() {
     lullabyPlayingRef.current = false;
     setIsPlayingLullaby(false);
+    if (sleepTimeoutRef.current) {
+      clearTimeout(sleepTimeoutRef.current);
+      sleepTimeoutRef.current = null;
+    }
+    setSleepMinutes(null);
     if (lullabyTimeoutRef.current) clearTimeout(lullabyTimeoutRef.current);
     if (audioFileRef.current) {
       audioFileRef.current.pause();
@@ -922,6 +944,8 @@ function App() {
             isPlaying={isPlayingLullaby}
             activeLullaby={activeLullaby}
             onSelect={selectLullaby}
+            sleepMinutes={sleepMinutes}
+            onSetSleepTimer={setLullabySleepTimer}
           />
         )}
       </div>
@@ -1715,7 +1739,7 @@ function CountingGameScreen({ target, count, score, feedback, accent, onTap, onR
   );
 }
 
-function LullabyScreen({ isPlaying, activeLullaby, onSelect }) {
+function LullabyScreen({ isPlaying, activeLullaby, onSelect, sleepMinutes, onSetSleepTimer }) {
   const melodies = Object.entries(LULLABIES).filter(([, l]) => l.category === "melody");
   const soothing = Object.entries(LULLABIES).filter(([, l]) => l.category === "soothing");
 
@@ -1746,6 +1770,59 @@ function LullabyScreen({ isPlaying, activeLullaby, onSelect }) {
         Тайвшруулах чимээ
       </div>
       <LullabyGroup items={soothing} activeLullaby={activeLullaby} isPlaying={isPlaying} onSelect={onSelect} />
+
+      <div style={{ fontSize: 13, fontWeight: 800, color: "#8E8BC4", margin: "22px 0 10px" }}>
+        ⏰ Унтах таймер
+      </div>
+      <div
+        style={{
+          display: "flex",
+          justifyContent: "center",
+          flexWrap: "wrap",
+          gap: 8,
+          maxWidth: 320,
+          margin: "0 auto",
+        }}
+      >
+        {[10, 20, 30].map((mins) => {
+          const isActive = sleepMinutes === mins;
+          return (
+            <button
+              key={mins}
+              className="btn3d"
+              onClick={() => onSetSleepTimer(isActive ? null : mins)}
+              style={{
+                borderRadius: 14,
+                padding: "8px 14px",
+                fontWeight: 800,
+                fontSize: 13,
+                color: isActive ? "#3A2E22" : "#F3E9C7",
+                cursor: "pointer",
+                ...depthStyle(isActive ? "#FFC93C" : "#3A3873", 3),
+              }}
+            >
+              {mins} мин
+            </button>
+          );
+        })}
+        {sleepMinutes && (
+          <button
+            className="btn3d"
+            onClick={() => onSetSleepTimer(null)}
+            style={{
+              borderRadius: 14,
+              padding: "8px 14px",
+              fontWeight: 800,
+              fontSize: 13,
+              color: "#F3E9C7",
+              cursor: "pointer",
+              ...depthStyle("#2B2A5C", 3),
+            }}
+          >
+            Унтраах
+          </button>
+        )}
+      </div>
     </div>
   );
 }
