@@ -2,7 +2,7 @@
   "name": "Бяцхан Эрдэмтэн",
   "short_name": "Эрдэмтэн",
   "description": "Хүүхдэд зориулсан үсэг, тоо сурах болон тоглоомын апп",
-  "start_url": "byatskhan-erdemten.html",
+  "start_url": "index.html",
   "scope": ".",
   "display": "standalone",
   "background_color": "#4A90D9",

@@ -1,6 +1,6 @@
-const CACHE_NAME = "byatskhan-erdemten-v1";
+const CACHE_NAME = "byatskhan-erdemten-v2";
 const SHELL_ASSETS = [
-  "byatskhan-erdemten.html",
+  "index.html",
   "manifest.json",
   "icon-192.png",
   "icon-512.png",
