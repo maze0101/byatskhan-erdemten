@@ -1784,7 +1784,7 @@ function LullabyScreen({ isPlaying, activeLullaby, onSelect, sleepMinutes, onSet
           margin: "0 auto",
         }}
       >
-        {[10, 20, 30].map((mins) => {
+        {[60, 120, 180].map((mins) => {
           const isActive = sleepMinutes === mins;
           return (
             <button
@@ -1801,7 +1801,7 @@ function LullabyScreen({ isPlaying, activeLullaby, onSelect, sleepMinutes, onSet
                 ...depthStyle(isActive ? "#FFC93C" : "#3A3873", 3),
               }}
             >
-              {mins} мин
+              {mins / 60} цаг
             </button>
           );
         })}
