@@ -130,30 +130,46 @@ const LULLABIES = {
     label: "Моцартын ая",
     emoji: "🎻",
     type: "audio",
+    category: "melody",
     src: "Baby Sleep MusicBaby Sleep Instantly in 3 MinutesCalm Night &Beat InsomniaMozart & Brahms Lullaby.mp3",
   },
   twinkle: {
     label: "Гялалзсан од",
     emoji: "⭐",
     type: "audio",
+    category: "melody",
     src: "Бүүвэйн дуу(buuvein duu).mp3",
   },
   gentle: {
     label: "Уяхан ая",
     emoji: "🌙",
     type: "audio",
+    category: "melody",
     src: "Narandulam feat Munkh-Erdene,  Shinetsog Geni  - Buu Ai - Sureg ost ( lyric video ).mp3",
+  },
+  breeze: {
+    label: "Тайвшруулах ая",
+    emoji: "🍃",
+    type: "melody",
+    category: "soothing",
+    notes: [
+      { note: "E4", dur: 1.2 }, { note: "G4", dur: 1.2 }, { note: "A4", dur: 1.6 }, { note: null, dur: 0.4 },
+      { note: "G4", dur: 1.2 }, { note: "E4", dur: 1.2 }, { note: "D4", dur: 1.8 }, { note: null, dur: 0.4 },
+      { note: "C4", dur: 1.4 }, { note: "E4", dur: 1.4 }, { note: "D4", dur: 2.2 }, { note: null, dur: 0.6 },
+    ],
   },
   shush: {
     label: "Шшш чимээ",
     emoji: "🤫",
     type: "noise",
+    category: "soothing",
     mode: "shush",
   },
   heartbeat: {
     label: "Зүрхний цохилт",
     emoji: "💓",
     type: "noise",
+    category: "soothing",
     mode: "heartbeat",
   },
 };
@@ -1694,8 +1710,8 @@ function CountingGameScreen({ target, count, score, feedback, accent, onTap, onR
 }
 
 function LullabyScreen({ isPlaying, activeLullaby, onSelect }) {
-  const melodies = Object.entries(LULLABIES).filter(([, l]) => l.type === "melody" || l.type === "audio");
-  const soothing = Object.entries(LULLABIES).filter(([, l]) => l.type === "noise");
+  const melodies = Object.entries(LULLABIES).filter(([, l]) => l.category === "melody");
+  const soothing = Object.entries(LULLABIES).filter(([, l]) => l.category === "soothing");
 
   return (
     <div style={{ textAlign: "center", paddingTop: 20 }}>
