@@ -240,7 +240,7 @@ function Mascot({ bounce, emoji, hopAnim, idleAnim }) {
 /* ---------- Main App ---------- */
 
 function App() {
-  const [screen, setScreen] = useState("profile"); // profile | home | letters | numbers | words | game | lullaby
+  const [screen, setScreen] = useState("profile"); // profile | home | letters | numbers | words | games | game-letters | game-numbers | game-memory | game-counting | lullaby
   const [profile, setProfile] = useState(null); // 'boy' | 'girl' | null
   const [activeLetter, setActiveLetter] = useState(null);
   const [activeNumber, setActiveNumber] = useState(null);
@@ -251,6 +251,18 @@ function App() {
   const [score, setScore] = useState(0);
   const [feedback, setFeedback] = useState(null); // 'correct' | 'wrong' | null
   const [wrongLetter, setWrongLetter] = useState(null);
+  const [numberRound, setNumberRound] = useState(null);
+  const [numberScore, setNumberScore] = useState(0);
+  const [numberFeedback, setNumberFeedback] = useState(null);
+  const [wrongNumber, setWrongNumber] = useState(null);
+  const [memoryCards, setMemoryCards] = useState([]);
+  const [memoryFirstPick, setMemoryFirstPick] = useState(null);
+  const [memoryLock, setMemoryLock] = useState(false);
+  const [memoryMoves, setMemoryMoves] = useState(0);
+  const [countingTarget, setCountingTarget] = useState(1);
+  const [countingCount, setCountingCount] = useState(0);
+  const [countingScore, setCountingScore] = useState(0);
+  const [countingFeedback, setCountingFeedback] = useState(null);
   const [isPlayingLullaby, setIsPlayingLullaby] = useState(false);
   const [activeLullaby, setActiveLullaby] = useState("steppe");
   const theme = getTheme(profile);
@@ -313,7 +325,7 @@ function App() {
     setWrongLetter(null);
     setRound(makeRound());
     setCaption("Зөв үсгийг ол! 🎯");
-    setScreen("game");
+    setScreen("game-letters");
   }
 
   function answerGame(option) {
@@ -335,6 +347,138 @@ function App() {
       setTimeout(() => setWrongLetter(null), 500);
     }
   }
+
+  function makeNumberRound() {
+    const target = NUMBERS[Math.floor(Math.random() * NUMBERS.length)];
+    const distractors = shuffle(NUMBERS.filter((n) => n.n !== target.n)).slice(0, 2);
+    const options = shuffle([target, ...distractors]);
+    return { target, options };
+  }
+
+  function startNumberGame() {
+    setNumberScore(0);
+    setNumberFeedback(null);
+    setWrongNumber(null);
+    setNumberRound(makeNumberRound());
+    setCaption("Хэдэн хонь байна вэ? 🐑");
+    setScreen("game-numbers");
+  }
+
+  function answerNumberGame(option) {
+    if (!numberRound || numberFeedback === "correct") return;
+    if (option.n === numberRound.target.n) {
+      setNumberFeedback("correct");
+      setWrongNumber(null);
+      setNumberScore((s) => s + 1);
+      bumpMascot();
+      setCaption(`Зөв байна! ${option.n} — ${option.word}`);
+      setTimeout(() => {
+        setNumberFeedback(null);
+        setNumberRound(makeNumberRound());
+        setCaption("Хэдэн хонь байна вэ? 🐑");
+      }, 1000);
+    } else {
+      setWrongNumber(option.n);
+      setCaption("Дахин тоолоорой 💪");
+      setTimeout(() => setWrongNumber(null), 500);
+    }
+  }
+
+  function startMemoryGame() {
+    const picks = shuffle(GAME_ITEMS).slice(0, 6);
+    const deck = shuffle(
+      picks.flatMap((item, i) => [
+        { id: `${i}-a`, key: item.letter, emoji: item.emoji, flipped: false, matched: false },
+        { id: `${i}-b`, key: item.letter, emoji: item.emoji, flipped: false, matched: false },
+      ])
+    );
+    setMemoryCards(deck);
+    setMemoryFirstPick(null);
+    setMemoryLock(false);
+    setMemoryMoves(0);
+    setCaption("Хос ол! 🧠");
+    setScreen("game-memory");
+  }
+
+  function flipMemoryCard(index) {
+    if (memoryLock) return;
+    const card = memoryCards[index];
+    if (!card || card.flipped || card.matched) return;
+
+    const next = memoryCards.map((c, i) => (i === index ? { ...c, flipped: true } : c));
+    setMemoryCards(next);
+
+    if (memoryFirstPick === null) {
+      setMemoryFirstPick(index);
+      return;
+    }
+
+    setMemoryMoves((m) => m + 1);
+    const first = next[memoryFirstPick];
+    if (first.key === card.key) {
+      setMemoryCards((prev) =>
+        prev.map((c, i) => (i === memoryFirstPick || i === index ? { ...c, matched: true } : c))
+      );
+      setMemoryFirstPick(null);
+      bumpMascot();
+      setCaption("Хос олдлоо! 🎉");
+    } else {
+      setMemoryLock(true);
+      setCaption("Дахин оролдоорой 💪");
+      setTimeout(() => {
+        setMemoryCards((prev) =>
+          prev.map((c, i) => (i === memoryFirstPick || i === index ? { ...c, flipped: false } : c))
+        );
+        setMemoryFirstPick(null);
+        setMemoryLock(false);
+      }, 800);
+    }
+  }
+
+  function startCountingGame() {
+    setCountingTarget(1 + Math.floor(Math.random() * 10));
+    setCountingCount(0);
+    setCountingScore(0);
+    setCountingFeedback(null);
+    setCaption("Тоогоо дараад тоол! 👆");
+    setScreen("game-counting");
+  }
+
+  function tapCounting() {
+    if (countingFeedback) return;
+    setCountingCount((c) => c + 1);
+  }
+
+  function resetCounting() {
+    setCountingCount(0);
+    setCountingFeedback(null);
+  }
+
+  useEffect(() => {
+    if (screen !== "game-counting" || countingCount === 0) return;
+    if (countingCount === countingTarget) {
+      setCountingFeedback("correct");
+      setCountingScore((s) => s + 1);
+      bumpMascot();
+      setCaption(`Зөв! ${countingTarget} 🎉`);
+      const t = setTimeout(() => {
+        setCountingTarget(1 + Math.floor(Math.random() * 10));
+        setCountingCount(0);
+        setCountingFeedback(null);
+        setCaption("Тоогоо дараад тоол! 👆");
+      }, 1000);
+      return () => clearTimeout(t);
+    }
+    if (countingCount > countingTarget) {
+      setCountingFeedback("wrong");
+      setCaption("Хэтэрлээ, дахин эхэл 💪");
+      const t = setTimeout(() => {
+        setCountingCount(0);
+        setCountingFeedback(null);
+      }, 600);
+      return () => clearTimeout(t);
+    }
+  }, [countingCount, screen]);
 
   function ensureAudioCtx() {
     if (!audioCtxRef.current) {
@@ -675,7 +819,17 @@ function App() {
         )}
 
         {screen === "home" && (
-          <HomeScreen onPick={(s) => setScreen(s)} onGame={startGame} onLullaby={openLullaby} theme={theme} />
+          <HomeScreen onPick={(s) => setScreen(s)} onLullaby={openLullaby} theme={theme} />
+        )}
+
+        {screen === "games" && (
+          <GamesHub
+            onLetters={startGame}
+            onNumbers={startNumberGame}
+            onMemory={startMemoryGame}
+            onCounting={startCountingGame}
+            theme={theme}
+          />
         )}
 
         {screen === "letters" && (
@@ -697,7 +851,7 @@ function App() {
           />
         )}
 
-        {screen === "game" && round && (
+        {screen === "game-letters" && round && (
           <GameScreen
             round={round}
             score={score}
@@ -705,6 +859,39 @@ function App() {
             wrongLetter={wrongLetter}
             onAnswer={answerGame}
             accent={theme.accent}
+          />
+        )}
+
+        {screen === "game-numbers" && numberRound && (
+          <NumberGameScreen
+            round={numberRound}
+            score={numberScore}
+            feedback={numberFeedback}
+            wrongNumber={wrongNumber}
+            onAnswer={answerNumberGame}
+            accent={theme.accent}
+          />
+        )}
+
+        {screen === "game-memory" && (
+          <MemoryGameScreen
+            cards={memoryCards}
+            moves={memoryMoves}
+            accent={theme.accent}
+            tileColors={theme.tileColors}
+            onFlip={flipMemoryCard}
+          />
+        )}
+
+        {screen === "game-counting" && (
+          <CountingGameScreen
+            target={countingTarget}
+            count={countingCount}
+            score={countingScore}
+            feedback={countingFeedback}
+            accent={theme.accent}
+            onTap={tapCounting}
+            onReset={resetCounting}
           />
         )}
 
@@ -913,7 +1100,7 @@ function ProfileScreen({ current, onChoose, onCancel }) {
   );
 }
 
-function HomeScreen({ onPick, onGame, onLullaby, theme }) {
+function HomeScreen({ onPick, onLullaby, theme }) {
   const [c0, c1, c2, c3] = theme.cardColors;
   return (
     <div>
@@ -945,9 +1132,9 @@ function HomeScreen({ onPick, onGame, onLullaby, theme }) {
         <BigCard
           bg={c3}
           label="Тоглоом"
-          sub="Зөв үсгийг ол"
-          display="🎯"
-          onClick={onGame}
+          sub="4 тоглоом"
+          display="🎮"
+          onClick={() => onPick("games")}
         />
         <BigCard
           bg="#6C6FBF"
@@ -984,6 +1171,23 @@ function BigCard({ bg, label, sub, display, onClick }) {
       <div style={{ fontSize: 22, fontWeight: 800, marginTop: 6, textShadow: "0 2px 0 rgba(0,0,0,0.15)" }}>{label}</div>
       <div style={{ fontSize: 14, fontWeight: 700, opacity: 0.95 }}>{sub}</div>
     </button>
+  );
+}
+
+function GamesHub({ onLetters, onNumbers, onMemory, onCounting, theme }) {
+  const [c0, c1, c2, c3] = theme.cardColors;
+  return (
+    <div>
+      <div style={{ fontSize: 17, fontWeight: 700, color: "#3A6B8A", marginBottom: 20, textAlign: "center" }}>
+        Ямар тоглоом тоглох вэ? 🎮
+      </div>
+      <div style={{ display: "flex", flexWrap: "wrap", gap: 16, justifyContent: "center" }}>
+        <BigCard bg={c0} label="Үсэг таах" sub="Зөв үсгийг ол" display="🎯" onClick={onLetters} />
+        <BigCard bg={c1} label="Тоо таах" sub="Хонио тоол" display="🐑" onClick={onNumbers} />
+        <BigCard bg={c2} label="Санах тоглоом" sub="Хос ол" display="🧠" onClick={onMemory} />
+        <BigCard bg={c3} label="Дарж тоол" sub="Тоогоо олоорой" display="👆" onClick={onCounting} />
+      </div>
+    </div>
   );
 }
 
@@ -1249,6 +1453,241 @@ function GameScreen({ round, score, feedback, wrongLetter, onAnswer, accent }) {
             </button>
           );
         })}
+      </div>
+    </div>
+  );
+}
+
+function NumberGameScreen({ round, score, feedback, wrongNumber, onAnswer, accent }) {
+  const { target, options } = round;
+  return (
+    <div style={{ textAlign: "center" }}>
+      <div
+        style={{
+          display: "inline-block",
+          background: "#FFFFFF",
+          borderRadius: 16,
+          padding: "6px 16px",
+          fontWeight: 800,
+          fontSize: 16,
+          color: "#3A2E22",
+          marginBottom: 18,
+          boxShadow: "0 3px 0 rgba(0,0,0,0.1)",
+        }}
+      >
+        ⭐ {score}
+      </div>
+
+      <div
+        style={{
+          display: "flex",
+          flexWrap: "wrap",
+          justifyContent: "center",
+          gap: 6,
+          maxWidth: 320,
+          margin: "0 auto 16px",
+          animation: feedback === "correct" ? "celebrate 0.6s ease" : "none",
+        }}
+      >
+        {Array.from({ length: target.n }).map((_, i) => (
+          <span key={i} style={{ fontSize: 34, animation: `popIn 0.3s ease ${i * 0.05}s both` }}>
+            🐑
+          </span>
+        ))}
+      </div>
+
+      <div style={{ fontSize: 20, fontWeight: 800, color: "#B5773A", margin: "0 0 26px" }}>
+        Хэдэн хонь вэ?
+      </div>
+
+      <div
+        style={{
+          display: "flex",
+          gap: 14,
+          justifyContent: "center",
+          flexWrap: "wrap",
+          maxWidth: 400,
+          margin: "0 auto",
+        }}
+      >
+        {options.map((opt) => {
+          const optColor = feedback === "correct" && opt.n === target.n ? "#5FBF6A" : accent;
+          return (
+            <button
+              key={opt.n}
+              className="tile"
+              onClick={() => onAnswer(opt)}
+              style={{
+                width: 84,
+                height: 84,
+                borderRadius: 20,
+                color: "#FFFFFF",
+                fontSize: 34,
+                fontWeight: 900,
+                cursor: "pointer",
+                textShadow: "0 2px 0 rgba(0,0,0,0.18)",
+                animation: wrongNumber === opt.n ? "shakeWrong 0.4s ease" : "none",
+                ...depthStyle(optColor, 5),
+              }}
+            >
+              {opt.n}
+            </button>
+          );
+        })}
+      </div>
+    </div>
+  );
+}
+
+function MemoryGameScreen({ cards, moves, accent, tileColors, onFlip }) {
+  const allMatched = cards.length > 0 && cards.every((c) => c.matched);
+  return (
+    <div style={{ textAlign: "center" }}>
+      <div
+        style={{
+          display: "inline-block",
+          background: "#FFFFFF",
+          borderRadius: 16,
+          padding: "6px 16px",
+          fontWeight: 800,
+          fontSize: 16,
+          color: "#3A2E22",
+          marginBottom: 18,
+          boxShadow: "0 3px 0 rgba(0,0,0,0.1)",
+        }}
+      >
+        🔄 {moves}
+      </div>
+
+      {allMatched && (
+        <div style={{ fontSize: 18, fontWeight: 800, color: "#5FBF6A", marginBottom: 14 }}>
+          Баяр хүргэе! Бүгдийг олов 🎉
+        </div>
+      )}
+
+      <div
+        className="scrollarea"
+        style={{
+          display: "grid",
+          gridTemplateColumns: "repeat(4, 1fr)",
+          gap: 10,
+          maxWidth: 400,
+          margin: "0 auto",
+        }}
+      >
+        {cards.map((card, i) => (
+          <button
+            key={card.id}
+            className="tile"
+            onClick={() => onFlip(i)}
+            style={{
+              aspectRatio: "1 / 1",
+              borderRadius: 16,
+              color: "#FFFFFF",
+              fontSize: 30,
+              fontWeight: 900,
+              cursor: card.matched ? "default" : "pointer",
+              opacity: card.matched ? 0.55 : 1,
+              pointerEvents: card.matched ? "none" : "auto",
+              ...depthStyle(card.flipped || card.matched ? tileColors[i % tileColors.length] : accent, 4),
+            }}
+          >
+            {card.flipped || card.matched ? card.emoji : "❓"}
+          </button>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+function CountingGameScreen({ target, count, score, feedback, accent, onTap, onReset }) {
+  return (
+    <div style={{ textAlign: "center" }}>
+      <div
+        style={{
+          display: "inline-block",
+          background: "#FFFFFF",
+          borderRadius: 16,
+          padding: "6px 16px",
+          fontWeight: 800,
+          fontSize: 16,
+          color: "#3A2E22",
+          marginBottom: 18,
+          boxShadow: "0 3px 0 rgba(0,0,0,0.1)",
+        }}
+      >
+        ⭐ {score}
+      </div>
+
+      <div style={{ fontSize: 20, fontWeight: 800, color: "#B5773A", marginBottom: 10 }}>
+        Энэ тоо хүртэл дар: {target}
+      </div>
+
+      <div
+        style={{
+          fontSize: 90,
+          fontWeight: 900,
+          color: feedback === "wrong" ? "#E85A5A" : "#3A2E22",
+          marginBottom: 16,
+          animation:
+            feedback === "correct" ? "celebrate 0.6s ease" : feedback === "wrong" ? "shakeWrong 0.4s ease" : "none",
+        }}
+      >
+        {count}
+      </div>
+
+      <div
+        style={{
+          display: "flex",
+          flexWrap: "wrap",
+          justifyContent: "center",
+          gap: 6,
+          maxWidth: 320,
+          margin: "0 auto 26px",
+          minHeight: 40,
+        }}
+      >
+        {Array.from({ length: count }).map((_, i) => (
+          <span key={i} style={{ fontSize: 28, animation: "popIn 0.25s ease" }}>
+            🐑
+          </span>
+        ))}
+      </div>
+
+      <button
+        className="tile"
+        onClick={onTap}
+        disabled={feedback === "correct"}
+        style={{
+          width: 130,
+          height: 130,
+          borderRadius: "50%",
+          fontSize: 46,
+          fontWeight: 900,
+          color: "#FFFFFF",
+          cursor: feedback === "correct" ? "default" : "pointer",
+          ...depthStyle(accent, 8),
+        }}
+      >
+        👆
+      </button>
+
+      <div style={{ marginTop: 20 }}>
+        <button
+          onClick={onReset}
+          className="btn3d"
+          style={{
+            borderRadius: 14,
+            padding: "8px 16px",
+            fontWeight: 800,
+            fontSize: 14,
+            color: "#3A2E22",
+            cursor: "pointer",
+            ...depthStyle("#FFFFFF", 3),
+          }}
+        >
+          🔄 Дахин эхлэх
+        </button>
       </div>
     </div>
   );
