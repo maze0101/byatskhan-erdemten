@@ -1,4 +1,4 @@
-const CACHE_NAME = "byatskhan-erdemten-v8";
+const CACHE_NAME = "byatskhan-erdemten-v9";
 const SHELL_ASSETS = [
   "index.html",
   "manifest.json",
