@@ -1210,6 +1210,36 @@ function HomeScreen({ onPick, onLullaby, theme }) {
   const [c0, c1, c2, c3] = theme.cardColors;
   return (
     <div>
+      <div style={{ display: "flex", justifyContent: "center", marginBottom: 10 }}>
+        <div
+          style={{
+            display: "flex",
+            height: 8,
+            width: 132,
+            borderRadius: 5,
+            overflow: "hidden",
+            boxShadow: "0 2px 5px rgba(0,0,0,0.18)",
+          }}
+        >
+          <div style={{ flex: 1, background: "#D0342C" }} />
+          <div style={{ flex: 2, background: "#12468C", position: "relative" }}>
+            <span
+              style={{
+                position: "absolute",
+                left: "50%",
+                top: "50%",
+                transform: "translate(-50%, -50%)",
+                fontSize: 7,
+                color: "#FFC93C",
+                lineHeight: 1,
+              }}
+            >
+              ✦
+            </span>
+          </div>
+          <div style={{ flex: 1, background: "#D0342C" }} />
+        </div>
+      </div>
       <div style={{ fontSize: 17, fontWeight: 700, color: "#3A6B8A", marginBottom: 20 }}>
         Тоо болон үсэг цуг сурцгаая! 🌿
       </div>
