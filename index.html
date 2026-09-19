@@ -2660,6 +2660,29 @@ function LullabyScreen({ isPlaying, activeLullaby, onSelect, profile, sleepMinut
         ))}
       </div>
 
+      {sleepMinutes && (
+        <div
+          style={{
+            position: "absolute",
+            zIndex: 6,
+            left: "50%",
+            bottom: "calc(max(22px, env(safe-area-inset-bottom)) + 92px)",
+            transform: "translateX(-50%)",
+            background: "rgba(33,28,61,0.85)",
+            border: "1px solid rgba(243,233,199,0.35)",
+            borderRadius: 20,
+            padding: "6px 14px",
+            fontSize: 13,
+            fontWeight: 800,
+            color: "#F3E9C7",
+            whiteSpace: "nowrap",
+            fontVariantNumeric: "tabular-nums",
+          }}
+        >
+          ⏰ {formatClock(sleepRemainingSec)} дараа унтана
+        </div>
+      )}
+
       <button
         onClick={() => onSelect(curKey)}
         aria-label={curPlaying ? "Зогсоох" : "Тоглуулах"}
