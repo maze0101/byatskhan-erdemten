@@ -2045,7 +2045,6 @@ function LullabyPage({ item, idx, playing }) {
           transform: playing
             ? "perspective(1000px) rotateX(7deg) scale(1.02)"
             : "perspective(1000px) rotateX(4deg)",
-          transformStyle: "preserve-3d",
         }}
       >
         <MusicBoxScene idx={idx} lacquer={item.lacquer} playing={playing} />
