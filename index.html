@@ -156,6 +156,101 @@ const MONGOLIAN_WORDS = [
   { word: "Ундаа", emoji: "🧃" },
 ];
 
+const SKY_STYLES = {
+  morning: { grad: ["#FBD897", "#8FC7E8"], sun: true },
+  day: { grad: ["#8FC7E8", "#C9E8F5"], sun: true },
+  dusk: { grad: ["#3A2A5C", "#E8896F"], sun: false },
+  night: { grad: ["#0E1230", "#2B2A5C"], sun: false, stars: true },
+};
+
+const STORY = {
+  title: "Цагаан хургын том аялал",
+  subtitle: "Монгол тал нутгийн комик үлгэр",
+  tag: "6–8 насны хүүхдэд",
+  pages: [
+    {
+      sky: "morning",
+      scene: ["ger", "🐑", "🐑"],
+      beats: [
+        { narration: "Нэгэн сайхан өглөө, уудам тал нутагт..." },
+        { speaker: "Ээж", text: "Цагаан минь, ойрхон тоглоорой шүү!" },
+        { speaker: "Цагаан", text: "За, ээж ээ!" },
+        { narration: "Гэнэт..." },
+        { speaker: "Цагаан", text: "Ямар хөөрхөн эрвээхэй вэ!" },
+        { speaker: "Цагаан", text: "Хүлээгээрэй!" },
+        { narration: "Цагаан хэр холдсоноо мэдсэнгүй." },
+        { speaker: "Цагаан", text: "Хөөрхөн эрвээхэй..." },
+      ],
+    },
+    {
+      sky: "dusk",
+      scene: ["🐑", "🐴"],
+      beats: [
+        { narration: "Нар шингэх болов." },
+        { speaker: "Цагаан", text: "Гэр маань хаана байна? Би төөрчихлөө!" },
+        { speaker: "Цагаан", text: "Ээж ээ... хаана байна аа?" },
+        { speaker: "Хүрэн", text: "Сайн уу! Би Хүрэн. Чи яагаад уйлаад байна?" },
+        { speaker: "Цагаан", text: "Би гэрээ олохгүй байна..." },
+        { speaker: "Хүрэн", text: "Санаа зов! Би чамд тусална!" },
+      ],
+    },
+    {
+      sky: "night",
+      scene: ["🐑", "🐴", "🐫"],
+      beats: [
+        { speaker: "Хүрэн", text: "Ботго Хонгор өндөр болохоор хол харна!" },
+        { speaker: "Ботго Хонгор", text: "Сайн уу! Би харъя даа." },
+        { speaker: "Ботго Хонгор", text: "Аа! Тэнд цагаан утаа харагдаж байна!" },
+        { narration: "Гэр нь маш хол байлаа." },
+        { speaker: "Цагаан", text: "Харанхуйд яаж очих вэ?" },
+        { speaker: "Цагаан", text: "Харанхуй болчихлоо... Би айж байна." },
+        { speaker: "Найзууд", text: "Санаа зов, бид чамтай хамт байна!" },
+      ],
+    },
+    {
+      sky: "night",
+      scene: ["🐑", "🐴", "🐫", "🦫", "🦉"],
+      beats: [
+        { speaker: "Ухаа", text: "Битгий ай! Би газрын доор сайн сонсдог юм." },
+        { speaker: "Ухаа", text: "Чшш... Хонины «бээ-бээ» дуу сонсогдлоо!" },
+        { speaker: "Шар шувуу", text: "Ху-ху! Би харанхуйд сайн хардаг. Намайг дага!" },
+        { narration: "Ухаа тэднийг замаар нь удирдав." },
+        { narration: "Тэд таван нөхөр болж хамтдаа явав." },
+      ],
+    },
+    {
+      sky: "night",
+      scene: ["🐴", "🐫", "🦫", "🦉"],
+      beats: [
+        { speaker: "Цагаан", text: "Хөл минь ядарлаа..." },
+        { speaker: "Ботго Хонгор", text: "Миний нуруун дээр суу!" },
+        { speaker: "Цагаан", text: "Өндөр байна аа! Би бүгдийг харж байна!" },
+        { speaker: "Хүрэн", text: "Хараарай! Гэрийн гэрэл!" },
+        { speaker: "Цагаан", text: "Гэр! Гэр байна!" },
+        { narration: "Тэд ганц ч зогсолгүй гэр рүү яарав." },
+      ],
+    },
+    {
+      sky: "night",
+      scene: ["ger", "🐑", "🐑", "🐴", "🐫", "🦫", "🦉"],
+      beats: [
+        { speaker: "Цагаан", text: "Ээж ээ!" },
+        { speaker: "Ээж", text: "Цагаан минь! Чи хаана байсан бэ?" },
+        { speaker: "Цагаан", text: "Ээж ээ, найзууд минь намайг авчирсан!" },
+        { speaker: "Ээж", text: "Баярлалаа, хайрт найзууд аа! Аарул, сүүтэй цайгаар дайлъя!" },
+        { speaker: "Найз", text: "Хамт байвал айдас алга болдог юм байна!" },
+        { narration: "Тэр шөнө Цагаан хамгийн сайхан нойрсов." },
+      ],
+    },
+  ],
+  moral: "Хамтдаа байвал хамгийн хол зам ч ойр, хамгийн харанхуй шөнө ч гэрэлтэй болдог.",
+  questions: [
+    "Цагаан яагаад төөрсөн бэ?",
+    "Түүнд ямар найзууд тусалсан бэ?",
+    "Чи найздаа хэрхэн тусалдаг вэ?",
+  ],
+};
+
 /* (theme-specific tile colors defined per profile below) */
 
 const KNOWN_WORDS = ALPHABET.filter((a) => a.word).reduce((map, a) => {
@@ -350,7 +445,7 @@ function Mascot({ bounce, emoji, hopAnim, idleAnim }) {
 /* ---------- Main App ---------- */
 
 function App() {
-  const [screen, setScreen] = useState("profile"); // profile | home | letters | numbers | animals | english | colors | mongolian-words | words | games | game-letters | game-numbers | game-memory | game-counting | lullaby
+  const [screen, setScreen] = useState("profile"); // profile | home | letters | numbers | animals | english | colors | mongolian-words | words | games | game-letters | game-numbers | game-memory | game-counting | lullaby | story
   const [profile, setProfile] = useState(null); // 'boy' | 'girl' | null
   const [activeLetter, setActiveLetter] = useState(null);
   const [activeNumber, setActiveNumber] = useState(null);
@@ -937,6 +1032,10 @@ function App() {
           0%, 100% { transform: translateY(0) rotate(-4deg); }
           50% { transform: translateY(-8px) rotate(4deg); }
         }
+        @keyframes sceneBob {
+          0%, 100% { transform: translateY(0); }
+          50% { transform: translateY(-6px); }
+        }
         .lullaby-track { scrollbar-width: none; }
         .lullaby-track::-webkit-scrollbar { display: none; }
         .tile, .btn3d {
@@ -963,7 +1062,7 @@ function App() {
       `}</style>
 
       {/* Day scene */}
-      {screen !== "lullaby" && (
+      {screen !== "lullaby" && screen !== "story" && (
         <>
           <div
             style={{
@@ -1032,7 +1131,7 @@ function App() {
 
       {/* Content */}
       <div style={{ position: "relative", zIndex: 2, padding: "20px 16px 130px" }}>
-        {screen !== "lullaby" && (
+        {screen !== "lullaby" && screen !== "story" && (
           <Header
             screen={screen}
             onHome={() => setScreen("home")}
@@ -1150,10 +1249,12 @@ function App() {
             onBack={() => setScreen("home")}
           />
         )}
+
+        {screen === "story" && <StoryScreen onBack={() => setScreen("home")} />}
       </div>
 
       {/* Mascot + caption bar */}
-      {screen !== "lullaby" && (
+      {screen !== "lullaby" && screen !== "story" && (
         <div
           style={{
             position: "fixed",
@@ -1489,6 +1590,13 @@ function HomeScreen({ onPick, onLullaby, theme }) {
           sub={`${MONGOLIAN_WORDS.length} үг`}
           display="Үг"
           onClick={() => onPick("mongolian-words")}
+        />
+        <BigCard
+          bg="#D98E4A"
+          label="Үлгэр"
+          sub="Цагаан хургын аялал"
+          display="📖"
+          onClick={() => onPick("story")}
         />
       </div>
     </div>
@@ -2740,6 +2848,430 @@ function LullabyScreen({ isPlaying, activeLullaby, onSelect, profile, sleepMinut
         </span>
       </button>
 
+    </div>
+  );
+}
+
+function SceneRow({ items }) {
+  return (
+    <div style={{ display: "flex", alignItems: "flex-end", justifyContent: "center", gap: 10, flexWrap: "wrap", padding: "0 10px" }}>
+      {items.map((it, i) =>
+        it === "ger" ? (
+          <div key={i} style={{ animation: `popIn 0.4s ease ${i * 0.05}s both` }}>
+            <Ger size={54} />
+          </div>
+        ) : (
+          <span
+            key={i}
+            style={{
+              fontSize: 42,
+              filter: "drop-shadow(0 3px 3px rgba(0,0,0,0.25))",
+              animation: `popIn 0.4s ease ${i * 0.05}s both, sceneBob 3s ease-in-out ${i * 0.2}s infinite`,
+            }}
+          >
+            {it}
+          </span>
+        )
+      )}
+    </div>
+  );
+}
+
+function StoryCoverPage() {
+  return (
+    <div
+      style={{
+        position: "relative",
+        flex: "0 0 100%",
+        height: "100%",
+        scrollSnapAlign: "start",
+        scrollSnapStop: "always",
+        overflow: "hidden",
+        display: "flex",
+        flexDirection: "column",
+        alignItems: "center",
+        justifyContent: "center",
+        gap: 14,
+        padding: "0 24px",
+        background: "linear-gradient(180deg, #8FC7E8 0%, #C9E8F5 55%, #FCEFC7 100%)",
+      }}
+    >
+      <div
+        style={{
+          position: "absolute",
+          top: 30,
+          right: 30,
+          width: 80,
+          height: 80,
+          borderRadius: "50%",
+          background: "radial-gradient(circle, #FFDE72 0%, #FFC93C 70%)",
+          boxShadow: "0 0 40px 14px rgba(255,201,60,0.4)",
+          animation: "sunPulse 4s ease-in-out infinite",
+        }}
+      />
+      <div
+        style={{
+          fontSize: 14,
+          fontWeight: 800,
+          color: "#8A5A2E",
+          background: "rgba(255,255,255,0.75)",
+          padding: "6px 14px",
+          borderRadius: 14,
+        }}
+      >
+        {STORY.subtitle}
+      </div>
+      <div
+        style={{
+          fontSize: "clamp(30px, 9vw, 44px)",
+          fontWeight: 900,
+          color: "#FFFFFF",
+          textAlign: "center",
+          textShadow: "0 3px 0 rgba(0,0,0,0.18)",
+          lineHeight: 1.05,
+        }}
+      >
+        {STORY.title}
+      </div>
+      <SceneRow items={["ger", "🐑", "🐴", "🐫"]} />
+      <div style={{ fontSize: 13, fontWeight: 800, color: "#8A5A2E", background: "#FFFFFF", padding: "6px 14px", borderRadius: 14 }}>
+        {STORY.tag}
+      </div>
+      <div style={{ fontSize: 13, fontWeight: 700, color: "#8A5A2E", opacity: 0.85, marginTop: 6 }}>
+        Эхлэхийн тулд шударна уу ▶
+      </div>
+    </div>
+  );
+}
+
+function StoryContentPage({ data }) {
+  const s = SKY_STYLES[data.sky] || SKY_STYLES.day;
+  return (
+    <div
+      style={{
+        position: "relative",
+        flex: "0 0 100%",
+        height: "100%",
+        scrollSnapAlign: "start",
+        scrollSnapStop: "always",
+        overflow: "hidden",
+        display: "flex",
+        flexDirection: "column",
+        background: `linear-gradient(180deg, ${s.grad[0]}, ${s.grad[1]})`,
+      }}
+    >
+      {s.sun && (
+        <div
+          style={{
+            position: "absolute",
+            top: 22,
+            right: 26,
+            width: 64,
+            height: 64,
+            borderRadius: "50%",
+            background: "radial-gradient(circle, #FFDE72 0%, #FFC93C 70%)",
+            boxShadow: "0 0 36px 12px rgba(255,201,60,0.4)",
+          }}
+        />
+      )}
+      {!s.sun && (
+        <div
+          style={{
+            position: "absolute",
+            top: 22,
+            right: 26,
+            width: 50,
+            height: 50,
+            borderRadius: "50%",
+            background: "radial-gradient(circle, #FFF6D9 0%, #F3E29B 70%)",
+            boxShadow: "0 0 30px 10px rgba(255,246,217,0.32)",
+            animation: "moonGlow 4s ease-in-out infinite",
+          }}
+        />
+      )}
+      {s.stars &&
+        NIGHT_STARS.map((st, i) => (
+          <span
+            key={i}
+            style={{
+              position: "absolute",
+              top: st.top,
+              left: st.left,
+              fontSize: st.size,
+              color: "#F3E9C7",
+              animation: `twinkle ${st.speed}s ease-in-out ${st.delay}s infinite`,
+            }}
+          >
+            ✦
+          </span>
+        ))}
+
+      <div style={{ height: "calc(max(14px, env(safe-area-inset-top)) + 56px)", flexShrink: 0 }} />
+
+      <div style={{ flexShrink: 0, marginBottom: 10, position: "relative", zIndex: 2 }}>
+        <SceneRow items={data.scene} />
+      </div>
+
+      <div
+        className="scrollarea"
+        style={{
+          position: "relative",
+          zIndex: 2,
+          flex: 1,
+          minHeight: 0,
+          overflowY: "auto",
+          padding: "0 18px calc(max(18px, env(safe-area-inset-bottom)) + 78px)",
+          display: "flex",
+          flexDirection: "column",
+          alignItems: "center",
+          gap: 8,
+        }}
+      >
+        {data.beats.map((b, i) =>
+          b.narration ? (
+            <div
+              key={i}
+              style={{
+                background: "rgba(42,32,26,0.62)",
+                border: "1px solid rgba(255,255,255,0.25)",
+                borderRadius: 14,
+                padding: "6px 12px",
+                fontSize: 13,
+                fontWeight: 700,
+                color: "#FCEFC7",
+                textAlign: "center",
+                maxWidth: 320,
+              }}
+            >
+              {b.narration}
+            </div>
+          ) : (
+            <div
+              key={i}
+              style={{
+                background: "#FFFFFF",
+                borderRadius: 16,
+                padding: "8px 14px",
+                maxWidth: 300,
+                boxShadow: "0 3px 0 rgba(0,0,0,0.12)",
+              }}
+            >
+              <div style={{ fontSize: 11, fontWeight: 800, color: "#B5773A", marginBottom: 2 }}>{b.speaker}</div>
+              <div style={{ fontSize: 14, fontWeight: 700, color: "#3A2E22" }}>{b.text}</div>
+            </div>
+          )
+        )}
+      </div>
+    </div>
+  );
+}
+
+function StoryEndingPage() {
+  return (
+    <div
+      style={{
+        position: "relative",
+        flex: "0 0 100%",
+        height: "100%",
+        scrollSnapAlign: "start",
+        scrollSnapStop: "always",
+        overflow: "hidden",
+        display: "flex",
+        flexDirection: "column",
+        alignItems: "center",
+        padding: "0 22px",
+        background: "linear-gradient(180deg, #FBD897 0%, #F3B79A 60%, #FCEFC7 100%)",
+      }}
+    >
+      <div style={{ height: "calc(max(14px, env(safe-area-inset-top)) + 60px)", flexShrink: 0 }} />
+      <div
+        style={{
+          fontSize: "clamp(32px, 10vw, 48px)",
+          fontWeight: 900,
+          color: "#E0645A",
+          textShadow: "0 3px 0 rgba(0,0,0,0.12)",
+          marginBottom: 10,
+        }}
+      >
+        ТӨГСӨВ
+      </div>
+      <SceneRow items={["ger", "🐑", "🐑", "🐴", "🐫", "🦫", "🦉"]} />
+      <div
+        className="scrollarea"
+        style={{ flex: 1, minHeight: 0, overflowY: "auto", width: "100%", maxWidth: 360, marginTop: 14, paddingBottom: 90 }}
+      >
+        <div style={{ background: "#FFFFFF", borderRadius: 18, padding: "14px 16px", marginBottom: 12, textAlign: "center" }}>
+          <div style={{ fontSize: 12, fontWeight: 800, color: "#B5773A", marginBottom: 4 }}>Сургамж</div>
+          <div style={{ fontSize: 14, fontWeight: 700, color: "#3A2E22" }}>{STORY.moral}</div>
+        </div>
+        <div style={{ background: "rgba(255,255,255,0.85)", borderRadius: 18, padding: "14px 16px" }}>
+          <div style={{ fontSize: 12, fontWeight: 800, color: "#B5773A", marginBottom: 8, textAlign: "center" }}>
+            Ярилцаж үзээрэй
+          </div>
+          {STORY.questions.map((q, i) => (
+            <div key={i} style={{ display: "flex", gap: 8, fontSize: 13, fontWeight: 700, color: "#3A2E22", marginBottom: 6 }}>
+              <span>{i + 1}.</span>
+              <span>{q}</span>
+            </div>
+          ))}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function StoryScreen({ onBack }) {
+  const total = STORY.pages.length + 2;
+  const [page, setPage] = useState(0);
+  const trackRef = useRef(null);
+  const scrollTimeout = useRef(null);
+
+  function goTo(i) {
+    const clamped = Math.max(0, Math.min(total - 1, i));
+    setPage(clamped);
+    const el = trackRef.current;
+    if (el) el.scrollTo({ left: clamped * el.clientWidth, behavior: "smooth" });
+  }
+
+  function handleScroll() {
+    const el = trackRef.current;
+    if (!el) return;
+    clearTimeout(scrollTimeout.current);
+    scrollTimeout.current = setTimeout(() => {
+      const i = Math.round(el.scrollLeft / el.clientWidth);
+      setPage((p) => (i !== p ? i : p));
+    }, 80);
+  }
+
+  return (
+    <div style={{ position: "fixed", inset: 0, zIndex: 30, background: "#171225" }}>
+      <div
+        style={{
+          position: "absolute",
+          zIndex: 6,
+          left: 64,
+          right: 14,
+          top: "max(14px, env(safe-area-inset-top))",
+          display: "flex",
+          gap: 5,
+        }}
+      >
+        {Array.from({ length: total }).map((_, i) => (
+          <button
+            key={i}
+            onClick={() => goTo(i)}
+            aria-label={`Хуудас ${i + 1}`}
+            style={{
+              flex: 1,
+              height: 3,
+              border: 0,
+              padding: 0,
+              borderRadius: 2,
+              background: i === page ? "#3A2E22" : "rgba(58,46,34,0.25)",
+              cursor: "pointer",
+            }}
+          />
+        ))}
+      </div>
+
+      <button
+        onClick={onBack}
+        aria-label="Нүүр"
+        style={{
+          position: "absolute",
+          zIndex: 6,
+          left: 14,
+          top: "calc(max(14px, env(safe-area-inset-top)) - 6px)",
+          width: 40,
+          height: 40,
+          borderRadius: "50%",
+          border: "none",
+          cursor: "pointer",
+          background: "rgba(255,255,255,0.55)",
+          color: "#3A2E22",
+          fontSize: 18,
+          display: "grid",
+          placeItems: "center",
+        }}
+      >
+        🏠
+      </button>
+
+      <div
+        ref={trackRef}
+        className="lullaby-track"
+        onScroll={handleScroll}
+        style={{
+          display: "flex",
+          height: "100%",
+          width: "100%",
+          overflowX: "auto",
+          overflowY: "hidden",
+          scrollSnapType: "x mandatory",
+          overscrollBehaviorX: "contain",
+        }}
+      >
+        <StoryCoverPage />
+        {STORY.pages.map((p, i) => (
+          <StoryContentPage key={i} data={p} />
+        ))}
+        <StoryEndingPage />
+      </div>
+
+      <div
+        style={{
+          position: "absolute",
+          zIndex: 6,
+          left: 0,
+          right: 0,
+          bottom: "max(18px, env(safe-area-inset-bottom))",
+          display: "flex",
+          justifyContent: "space-between",
+          padding: "0 18px",
+          pointerEvents: "none",
+        }}
+      >
+        <button
+          onClick={() => goTo(page - 1)}
+          disabled={page === 0}
+          style={{
+            pointerEvents: "auto",
+            width: 52,
+            height: 52,
+            borderRadius: "50%",
+            border: "none",
+            cursor: page === 0 ? "default" : "pointer",
+            opacity: page === 0 ? 0.3 : 1,
+            background: "linear-gradient(160deg, #f3d38c, #c9974a)",
+            color: "#1c1530",
+            fontSize: 20,
+            fontWeight: 900,
+            boxShadow: "0 6px 16px rgba(0,0,0,0.35)",
+          }}
+        >
+          ◀
+        </button>
+        <button
+          onClick={() => goTo(page + 1)}
+          disabled={page === total - 1}
+          style={{
+            pointerEvents: "auto",
+            width: 52,
+            height: 52,
+            borderRadius: "50%",
+            border: "none",
+            cursor: page === total - 1 ? "default" : "pointer",
+            opacity: page === total - 1 ? 0.3 : 1,
+            background: "linear-gradient(160deg, #f3d38c, #c9974a)",
+            color: "#1c1530",
+            fontSize: 20,
+            fontWeight: 900,
+            boxShadow: "0 6px 16px rgba(0,0,0,0.35)",
+          }}
+        >
+          ▶
+        </button>
+      </div>
     </div>
   );
 }
