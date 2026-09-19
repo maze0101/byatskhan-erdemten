@@ -89,6 +89,11 @@ const KNOWN_WORDS = ALPHABET.filter((a) => a.word).reduce((map, a) => {
 
 const GAME_ITEMS = ALPHABET.filter((a) => a.word);
 
+function rng(seed) {
+  let s = seed * 9301 + 49297;
+  return () => (s = (s * 9301 + 49297) % 233280) / 233280;
+}
+
 function shuffle(arr) {
   const a = [...arr];
   for (let i = a.length - 1; i > 0; i--) {
@@ -141,6 +146,9 @@ const LULLABIES = {
     type: "audio",
     category: "melody",
     src: "Baby Sleep MusicBaby Sleep Instantly in 3 MinutesCalm Night &Beat InsomniaMozart & Brahms Lullaby.mp3",
+    sky: ["#171b36", "#3b2d66"],
+    lacquer: "#7a2438",
+    accent: "#f2a6b8",
   },
   twinkle: {
     label: "Бүүвэйн дуу",
@@ -148,6 +156,9 @@ const LULLABIES = {
     type: "audio",
     category: "melody",
     src: "Бүүвэйн дуу(buuvein duu).mp3",
+    sky: ["#10261f", "#2f5140"],
+    lacquer: "#6b3a1f",
+    accent: "#cfe8b8",
   },
   gentle: {
     label: "Бүүвэй киноны дуу",
@@ -155,6 +166,9 @@ const LULLABIES = {
     type: "audio",
     category: "melody",
     src: "Narandulam feat Munkh-Erdene,  Shinetsog Geni  - Buu Ai - Sureg ost ( lyric video ).mp3",
+    sky: ["#2c1233", "#5c2b52"],
+    lacquer: "#1f4a47",
+    accent: "#ffc2d4",
   },
   shush: {
     label: "Шшш чимээ",
@@ -162,6 +176,9 @@ const LULLABIES = {
     type: "noise",
     category: "soothing",
     mode: "shush",
+    sky: ["#1a2634", "#3d4f66"],
+    lacquer: "#33475e",
+    accent: "#cfe0ee",
   },
   heartbeat: {
     label: "Зүрхний цохилт",
@@ -169,6 +186,9 @@ const LULLABIES = {
     type: "noise",
     category: "soothing",
     mode: "heartbeat",
+    sky: ["#3a1220", "#6b2b3f"],
+    lacquer: "#5e2038",
+    accent: "#ffb3c1",
   },
 };
 
@@ -280,6 +300,7 @@ function App() {
   const [isPlayingLullaby, setIsPlayingLullaby] = useState(false);
   const [activeLullaby, setActiveLullaby] = useState("steppe");
   const [sleepMinutes, setSleepMinutes] = useState(null);
+  const [playProgress, setPlayProgress] = useState(0);
   const theme = getTheme(profile);
   const audioCtxRef = useRef(null);
   const lullabyTimeoutRef = useRef(null);
@@ -692,6 +713,23 @@ function App() {
   }, [screen]);
 
   useEffect(() => {
+    if (!isPlayingLullaby || LULLABIES[activeLullaby].type !== "audio") {
+      setPlayProgress(0);
+      return;
+    }
+    let raf;
+    const tick = () => {
+      const audio = audioFileRef.current;
+      if (audio && audio.duration) {
+        setPlayProgress(audio.currentTime / audio.duration);
+      }
+      raf = requestAnimationFrame(tick);
+    };
+    raf = requestAnimationFrame(tick);
+    return () => cancelAnimationFrame(raf);
+  }, [isPlayingLullaby, activeLullaby]);
+
+  useEffect(() => {
     return () => stopLullaby();
   }, []);
 
@@ -745,18 +783,36 @@ function App() {
           0%, 100% { opacity: 0.85; transform: scale(1); }
           50% { opacity: 1; transform: scale(1.04); }
         }
-        @keyframes moonFloat {
-          0%, 100% { transform: translateY(0) rotate(-6deg); }
-          50% { transform: translateY(-10px) rotate(6deg); }
-        }
-        @keyframes moonFloatGlow {
-          0%, 100% { transform: translateY(0) rotate(-6deg) scale(1); opacity: 0.9; }
-          50% { transform: translateY(-10px) rotate(6deg) scale(1.08); opacity: 1; }
-        }
         @keyframes twinkle {
           0%, 100% { opacity: 0.25; }
           50% { opacity: 1; }
         }
+        @keyframes dancerSpin {
+          from { transform: perspective(520px) rotateY(0); }
+          to { transform: perspective(520px) rotateY(360deg); }
+        }
+        @keyframes ringMarch {
+          to { stroke-dashoffset: -110; }
+        }
+        @keyframes keyWind {
+          0%, 100% { transform: scaleY(1); }
+          50% { transform: scaleY(0.18); }
+        }
+        @keyframes noteRise {
+          0% { transform: translate(0,0) rotate(-8deg); opacity: 0; }
+          15% { opacity: 0.95; }
+          100% { transform: translate(var(--dx), -190px) rotate(14deg); opacity: 0; }
+        }
+        @keyframes breathe {
+          0%, 100% { opacity: 0.35; transform: scale(0.94); }
+          50% { opacity: 1; transform: scale(1.04); }
+        }
+        @keyframes sheetUp {
+          from { transform: translateY(100%); }
+          to { transform: translateY(0); }
+        }
+        .lullaby-track { scrollbar-width: none; }
+        .lullaby-track::-webkit-scrollbar { display: none; }
         .tile, .btn3d {
           position: relative;
           transform: translateY(0) scale(1);
@@ -850,13 +906,15 @@ function App() {
 
       {/* Content */}
       <div style={{ position: "relative", zIndex: 2, padding: "20px 16px 130px" }}>
-        <Header
-          screen={screen}
-          onHome={() => setScreen("home")}
-          profile={profile}
-          onChangeProfile={() => setScreen("profile")}
-          titleColor={theme.titleColor}
-        />
+        {screen !== "lullaby" && (
+          <Header
+            screen={screen}
+            onHome={() => setScreen("home")}
+            profile={profile}
+            onChangeProfile={() => setScreen("profile")}
+            titleColor={theme.titleColor}
+          />
+        )}
 
         {screen === "profile" && (
           <ProfileScreen current={profile} onChoose={chooseProfile} onCancel={() => setScreen("home")} />
@@ -946,49 +1004,46 @@ function App() {
             onSelect={selectLullaby}
             sleepMinutes={sleepMinutes}
             onSetSleepTimer={setLullabySleepTimer}
+            playProgress={playProgress}
+            onBack={() => setScreen("home")}
           />
         )}
       </div>
 
       {/* Mascot + caption bar */}
-      <div
-        style={{
-          position: "fixed",
-          left: 0,
-          right: 0,
-          bottom: 0,
-          zIndex: 10,
-          display: "flex",
-          alignItems: "flex-end",
-          gap: 10,
-          padding: "10px 14px 14px",
-          background:
-            screen === "lullaby"
-              ? "linear-gradient(0deg, rgba(23,27,54,0.95) 60%, rgba(23,27,54,0))"
-              : "linear-gradient(0deg, rgba(255,255,255,0.95) 60%, rgba(255,255,255,0))",
-        }}
-      >
-        {screen === "lullaby" ? (
-          <div style={{ fontSize: 54 }}>😴</div>
-        ) : (
-          <Mascot bounce={hop} emoji={theme.mascot} hopAnim={theme.mascotHop} idleAnim={theme.mascotIdle} />
-        )}
+      {screen !== "lullaby" && (
         <div
           style={{
-            background: screen === "lullaby" ? "#2B2A5C" : "#FFFFFF",
-            border: screen === "lullaby" ? "3px solid #8B87D6" : `3px solid ${theme.accent}`,
-            borderRadius: 18,
-            padding: "10px 16px",
-            fontWeight: 800,
-            fontSize: 20,
-            color: screen === "lullaby" ? "#F3E9C7" : "#3A2E22",
-            flex: 1,
-            maxWidth: 420,
+            position: "fixed",
+            left: 0,
+            right: 0,
+            bottom: 0,
+            zIndex: 10,
+            display: "flex",
+            alignItems: "flex-end",
+            gap: 10,
+            padding: "10px 14px 14px",
+            background: "linear-gradient(0deg, rgba(255,255,255,0.95) 60%, rgba(255,255,255,0))",
           }}
         >
-          {caption}
+          <Mascot bounce={hop} emoji={theme.mascot} hopAnim={theme.mascotHop} idleAnim={theme.mascotIdle} />
+          <div
+            style={{
+              background: "#FFFFFF",
+              border: `3px solid ${theme.accent}`,
+              borderRadius: 18,
+              padding: "10px 16px",
+              fontWeight: 800,
+              fontSize: 20,
+              color: "#3A2E22",
+              flex: 1,
+              maxWidth: 420,
+            }}
+          >
+            {caption}
+          </div>
         </div>
-      </div>
+      )}
 
       {/* Letter modal */}
       {activeLetter && (
@@ -1739,140 +1794,496 @@ function CountingGameScreen({ target, count, score, feedback, accent, onTap, onR
   );
 }
 
-function LullabyScreen({ isPlaying, activeLullaby, onSelect, sleepMinutes, onSetSleepTimer }) {
-  const melodies = Object.entries(LULLABIES).filter(([, l]) => l.category === "melody");
-  const soothing = Object.entries(LULLABIES).filter(([, l]) => l.category === "soothing");
+const LULLABY_CIRC = 245.04;
+
+function MusicBoxScene({ idx, lacquer, playing }) {
+  const tines = [];
+  for (let k = 0; k < 12; k++) {
+    const x = 162 + k * 6.9;
+    const h = 12 + k * 1.9;
+    tines.push(
+      <line key={k} x1={x} y1="446" x2={x} y2={446 - h} stroke="#e2b866" strokeWidth="2" strokeLinecap="round" />
+    );
+  }
+  return (
+    <svg
+      viewBox="0 0 400 560"
+      aria-hidden="true"
+      style={{ position: "absolute", inset: 0, width: "100%", height: "100%", overflow: "visible" }}
+    >
+      <defs>
+        <linearGradient id={`spot${idx}`} x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0" stopColor="#fff2cf" stopOpacity="0" />
+          <stop offset="0.6" stopColor="#ffe7ae" stopOpacity="0.22" />
+          <stop offset="1" stopColor="#ffe7ae" stopOpacity="0.42" />
+        </linearGradient>
+        <linearGradient id={`lac${idx}`} x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0" stopColor={lacquer} />
+          <stop offset="1" stopColor={`color-mix(in srgb, ${lacquer} 55%, #000)`} />
+        </linearGradient>
+        <linearGradient id={`gold${idx}`} x1="0" y1="0" x2="1" y2="0">
+          <stop offset="0" stopColor="#b98a3e" />
+          <stop offset="0.45" stopColor="#f6dc94" />
+          <stop offset="1" stopColor="#b98a3e" />
+        </linearGradient>
+      </defs>
+
+      <polygon
+        points="200,-140 80,338 320,338"
+        fill={`url(#spot${idx})`}
+        style={{ opacity: playing ? 1 : 0, transition: "opacity 1s", mixBlendMode: "screen" }}
+      />
+      <ellipse cx="200" cy="516" rx="156" ry="12" fill="#000" opacity="0.38" />
+
+      <rect x="92" y="490" width="30" height="14" rx="4" fill="#b98a3e" />
+      <rect x="278" y="490" width="30" height="14" rx="4" fill="#b98a3e" />
+      <rect x="78" y="334" width="244" height="160" rx="16" fill={`url(#lac${idx})`} />
+      <rect x="92" y="354" width="6" height="118" rx="3" fill="#fff" opacity="0.13" />
+      <rect x="78" y="374" width="244" height="6" fill={`url(#gold${idx})`} />
+      <rect x="78" y="480" width="244" height="6" fill={`url(#gold${idx})`} />
+      <rect x="148" y="396" width="104" height="62" rx="9" fill="#120d1e" opacity="0.6" stroke="#e2b866" strokeWidth="1.5" />
+      {tines}
+
+      <g transform="translate(322 428)">
+        <rect x="0" y="-3" width="22" height="6" rx="3" fill={`url(#gold${idx})`} />
+        <g
+          style={{
+            transformBox: "fill-box",
+            transformOrigin: "center",
+            animation: playing ? "keyWind 1.8s ease-in-out infinite" : "none",
+          }}
+        >
+          <ellipse cx="32" cy="-11" rx="7" ry="10" fill={`url(#gold${idx})`} />
+          <ellipse cx="32" cy="11" rx="7" ry="10" fill={`url(#gold${idx})`} />
+        </g>
+      </g>
+
+      <ellipse cx="200" cy="336" rx="126" ry="27" fill={`url(#gold${idx})`} />
+      <ellipse cx="200" cy="334" rx="108" ry="21" fill="#26142f" />
+      <ellipse
+        cx="200"
+        cy="334"
+        rx="92"
+        ry="16"
+        fill="none"
+        stroke="#e2b866"
+        strokeWidth="2"
+        strokeDasharray="2 9"
+        strokeLinecap="round"
+        opacity="0.85"
+        style={{ animation: playing ? "ringMarch 6s linear infinite" : "none" }}
+      />
+      <ellipse cx="200" cy="336" rx="24" ry="5" fill="#000" opacity="0.45" />
+    </svg>
+  );
+}
+
+function Dancer({ accent }) {
+  return (
+    <svg viewBox="0 0 100 160" aria-hidden="true" style={{ width: "100%", height: "100%", overflow: "visible" }}>
+      <path d="M47 102 L46 149" stroke="#f3ede4" strokeWidth="4.6" strokeLinecap="round" fill="none" />
+      <path
+        d="M53 102 Q76 108 67 124 L52 128"
+        stroke="#f3ede4"
+        strokeWidth="4.6"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        fill="none"
+      />
+      <ellipse cx="46" cy="151" rx="3.4" ry="3.6" fill="#f2c4c0" />
+      <ellipse cx="51" cy="128.5" rx="3.4" ry="2.8" fill="#f2c4c0" />
+      <ellipse cx="50" cy="107" rx="32" ry="6.5" fill="#dcd2c4" />
+      <ellipse cx="50" cy="104" rx="37" ry="8" fill="#fbf7ef" />
+      <ellipse cx="50" cy="103" rx="37" ry="8" fill="none" stroke="rgba(0,0,0,0.1)" strokeWidth="1" />
+      <path d="M42 64 Q50 59 58 64 L56 98 Q50 103 44 98 Z" fill={accent} />
+      <path d="M44 69 Q29 52 44 31 M56 69 Q71 52 56 31" stroke="#efd9c9" strokeWidth="4" strokeLinecap="round" fill="none" />
+      <circle cx="50" cy="55" r="7.5" fill="#efd9c9" />
+      <circle cx="50" cy="45.5" r="5.4" fill="#2a1a1c" />
+      <path d="M42.6 53 Q50 46.5 57.4 53 Q50 49.5 42.6 53Z" fill="#2a1a1c" />
+    </svg>
+  );
+}
+
+function LullabyPage({ item, idx, playing }) {
+  const [notes, setNotes] = useState([]);
+  const stars = React.useMemo(() => {
+    const r = rng(idx + 3);
+    const arr = [];
+    for (let k = 0; k < 22; k++) {
+      arr.push({ left: r() * 100, top: r() * 60, size: 1 + r() * 2.2, delay: r() * 2.6, dur: 2 + r() * 2.4 });
+    }
+    return arr;
+  }, [idx]);
+
+  useEffect(() => {
+    if (!playing || item.type !== "audio") {
+      setNotes([]);
+      return;
+    }
+    const id = setInterval(() => {
+      setNotes((prev) => [
+        ...prev.slice(-5),
+        {
+          id: Math.random(),
+          left: 28 + Math.random() * 44,
+          dx: ((Math.random() - 0.5) * 90).toFixed(0),
+          glyph: Math.random() > 0.5 ? "♪" : "♫",
+        },
+      ]);
+    }, 650);
+    return () => clearInterval(id);
+  }, [playing, item.type]);
 
   return (
-    <div style={{ textAlign: "center", paddingTop: 20 }}>
-      <div
+    <div
+      style={{
+        position: "relative",
+        flex: "0 0 100%",
+        height: "100%",
+        scrollSnapAlign: "start",
+        scrollSnapStop: "always",
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
+        background: `radial-gradient(90% 60% at 50% 62%, ${item.sky[1]}, transparent 72%), linear-gradient(180deg, ${item.sky[0]}, color-mix(in srgb, ${item.sky[0]} 70%, #000))`,
+        overflow: "hidden",
+      }}
+    >
+      {stars.map((s, i) => (
+        <span
+          key={i}
+          style={{
+            position: "absolute",
+            left: s.left + "%",
+            top: s.top + "%",
+            width: s.size,
+            height: s.size,
+            borderRadius: "50%",
+            background: "#F3E9C7",
+            opacity: playing ? 0.3 : 0.22,
+            animation: playing ? `twinkle ${s.dur}s ease-in-out ${s.delay}s infinite` : "none",
+          }}
+        />
+      ))}
+
+      <h2
         style={{
-          fontSize: 70,
-          marginBottom: 10,
-          display: "inline-block",
-          animation: isPlaying
-            ? "moonFloatGlow 2.6s ease-in-out infinite"
-            : "moonFloat 4s ease-in-out infinite",
+          position: "absolute",
+          left: 22,
+          right: 22,
+          zIndex: 3,
+          top: "calc(max(14px, env(safe-area-inset-top)) + 26px)",
+          margin: 0,
+          textAlign: "center",
+          fontFamily: "'Baloo 2', sans-serif",
+          fontWeight: 800,
+          fontSize: "clamp(22px, 6.6vw, 32px)",
+          color: "#F3E9C7",
+          textShadow: "0 2px 18px rgba(0,0,0,0.45)",
         }}
       >
-        🌙
-      </div>
-      <div style={{ fontSize: 20, fontWeight: 800, color: "#F3E9C7", marginBottom: 8 }}>
-        Тайван нойрсоорой
-      </div>
-      <div style={{ fontSize: 14, fontWeight: 700, color: "#B7B4E0", marginBottom: 22 }}>
-        Дуртай аяа сонго
-      </div>
+        {item.emoji} {item.label}
+      </h2>
 
-      <LullabyGroup items={melodies} activeLullaby={activeLullaby} isPlaying={isPlaying} onSelect={onSelect} />
-
-      <div style={{ fontSize: 13, fontWeight: 800, color: "#8E8BC4", margin: "22px 0 10px" }}>
-        Тайвшруулах чимээ
-      </div>
-      <LullabyGroup items={soothing} activeLullaby={activeLullaby} isPlaying={isPlaying} onSelect={onSelect} />
-
-      <div style={{ fontSize: 13, fontWeight: 800, color: "#8E8BC4", margin: "22px 0 10px" }}>
-        ⏰ Унтах таймер
-      </div>
       <div
         style={{
-          display: "flex",
-          justifyContent: "center",
-          flexWrap: "wrap",
-          gap: 8,
-          maxWidth: 320,
-          margin: "0 auto",
+          position: "relative",
+          width: "min(78vw, 40dvh)",
+          aspectRatio: "400 / 560",
+          marginTop: "6dvh",
+          filter: playing ? "none" : "brightness(0.72) saturate(0.85)",
+          transition: "filter 0.8s",
         }}
       >
-        {[60, 120, 180].map((mins) => {
-          const isActive = sleepMinutes === mins;
-          return (
-            <button
-              key={mins}
-              className="btn3d"
-              onClick={() => onSetSleepTimer(isActive ? null : mins)}
-              style={{
-                borderRadius: 14,
-                padding: "8px 14px",
-                fontWeight: 800,
-                fontSize: 13,
-                color: isActive ? "#3A2E22" : "#F3E9C7",
-                cursor: "pointer",
-                ...depthStyle(isActive ? "#FFC93C" : "#3A3873", 3),
-              }}
-            >
-              {mins / 60} цаг
-            </button>
-          );
-        })}
-        {sleepMinutes && (
-          <button
-            className="btn3d"
-            onClick={() => onSetSleepTimer(null)}
+        <MusicBoxScene idx={idx} lacquer={item.lacquer} playing={playing} />
+        <div
+          style={{
+            position: "absolute",
+            left: "35%",
+            top: "26.5%",
+            width: "30%",
+            height: "34.3%",
+            animation: playing ? "dancerSpin 2.6s linear infinite" : "none",
+          }}
+        >
+          <Dancer accent={item.accent} />
+        </div>
+        {notes.map((n) => (
+          <span
+            key={n.id}
+            onAnimationEnd={() => setNotes((prev) => prev.filter((x) => x.id !== n.id))}
             style={{
-              borderRadius: 14,
-              padding: "8px 14px",
-              fontWeight: 800,
-              fontSize: 13,
-              color: "#F3E9C7",
-              cursor: "pointer",
-              ...depthStyle("#2B2A5C", 3),
+              position: "absolute",
+              left: n.left + "%",
+              top: "38%",
+              fontSize: 22,
+              fontWeight: 700,
+              color: item.accent,
+              textShadow: `0 0 12px ${item.accent}`,
+              "--dx": n.dx + "px",
+              animation: "noteRise 1.9s ease-out forwards",
+              pointerEvents: "none",
             }}
           >
-            Унтраах
-          </button>
-        )}
+            {n.glyph}
+          </span>
+        ))}
       </div>
     </div>
   );
 }
 
-function LullabyGroup({ items, activeLullaby, isPlaying, onSelect }) {
+function LullabyScreen({ isPlaying, activeLullaby, onSelect, sleepMinutes, onSetSleepTimer, playProgress, onBack }) {
+  const entries = Object.entries(LULLABIES);
+  const [page, setPage] = useState(() => Math.max(0, entries.findIndex(([k]) => k === activeLullaby)));
+  const [showTimer, setShowTimer] = useState(false);
+  const trackRef = useRef(null);
+  const scrollTimeout = useRef(null);
+
+  function goTo(i) {
+    setPage(i);
+    const el = trackRef.current;
+    if (el) el.scrollTo({ left: i * el.clientWidth, behavior: "smooth" });
+  }
+
+  function handleScroll() {
+    const el = trackRef.current;
+    if (!el) return;
+    clearTimeout(scrollTimeout.current);
+    scrollTimeout.current = setTimeout(() => {
+      const i = Math.round(el.scrollLeft / el.clientWidth);
+      setPage((p) => (i !== p ? i : p));
+    }, 80);
+  }
+
+  const [curKey, curItem] = entries[page];
+  const curPlaying = isPlaying && activeLullaby === curKey;
+  const ringOffset =
+    curItem.type === "audio" ? LULLABY_CIRC * (1 - (curPlaying ? playProgress : 0)) : LULLABY_CIRC * 0.25;
+
   return (
-    <div
-      style={{
-        display: "flex",
-        flexDirection: "column",
-        gap: 12,
-        maxWidth: 320,
-        margin: "0 auto",
-      }}
-    >
-      {items.map(([key, l]) => {
-        const isActive = activeLullaby === key;
-        const isActivePlaying = isActive && isPlaying;
-        return (
+    <div style={{ position: "fixed", inset: 0, zIndex: 30, background: "#0d0a1a" }}>
+      <div
+        style={{
+          position: "absolute",
+          zIndex: 6,
+          left: 64,
+          right: 64,
+          top: "max(14px, env(safe-area-inset-top))",
+          display: "flex",
+          gap: 6,
+        }}
+      >
+        {entries.map(([k], i) => (
           <button
-            key={key}
-            className="tile"
-            onClick={() => onSelect(key)}
+            key={k}
+            onClick={() => goTo(i)}
+            aria-label={entries[i][1].label}
             style={{
-              display: "flex",
-              alignItems: "center",
-              gap: 14,
-              borderRadius: 20,
-              padding: "14px 18px",
+              flex: 1,
+              height: 3,
+              border: 0,
+              padding: 0,
+              borderRadius: 2,
+              background: i === page ? "#F3E9C7" : "rgba(243,233,199,0.28)",
               cursor: "pointer",
-              textAlign: "left",
-              ...depthStyle(isActive ? "#3A3873" : "#2B2A5C", 4),
-              ...(isActive ? { border: "3px solid #F3E9C7" } : {}),
+            }}
+          />
+        ))}
+      </div>
+
+      <button
+        onClick={onBack}
+        aria-label="Нүүр"
+        style={{
+          position: "absolute",
+          zIndex: 6,
+          left: 14,
+          top: "calc(max(14px, env(safe-area-inset-top)) - 6px)",
+          width: 40,
+          height: 40,
+          borderRadius: "50%",
+          border: "none",
+          cursor: "pointer",
+          background: "rgba(255,255,255,0.14)",
+          color: "#F3E9C7",
+          fontSize: 18,
+          display: "grid",
+          placeItems: "center",
+        }}
+      >
+        🏠
+      </button>
+      <button
+        onClick={() => setShowTimer((s) => !s)}
+        aria-label="Унтах таймер"
+        style={{
+          position: "absolute",
+          zIndex: 6,
+          right: 14,
+          top: "calc(max(14px, env(safe-area-inset-top)) - 6px)",
+          width: 40,
+          height: 40,
+          borderRadius: "50%",
+          border: "none",
+          cursor: "pointer",
+          background: sleepMinutes ? "#FFC93C" : "rgba(255,255,255,0.14)",
+          color: sleepMinutes ? "#3A2E22" : "#F3E9C7",
+          fontSize: 18,
+          display: "grid",
+          placeItems: "center",
+        }}
+      >
+        ⏰
+      </button>
+
+      <div
+        ref={trackRef}
+        className="lullaby-track"
+        onScroll={handleScroll}
+        style={{
+          display: "flex",
+          height: "100%",
+          width: "100%",
+          overflowX: "auto",
+          overflowY: "hidden",
+          scrollSnapType: "x mandatory",
+          overscrollBehaviorX: "contain",
+        }}
+      >
+        {entries.map(([key, item], i) => (
+          <LullabyPage key={key} item={item} idx={i} playing={isPlaying && activeLullaby === key} />
+        ))}
+      </div>
+
+      <button
+        onClick={() => onSelect(curKey)}
+        aria-label={curPlaying ? "Зогсоох" : "Тоглуулах"}
+        style={{
+          position: "absolute",
+          zIndex: 6,
+          left: "50%",
+          bottom: "max(22px, env(safe-area-inset-bottom))",
+          transform: "translateX(-50%)",
+          width: 76,
+          height: 76,
+          padding: 0,
+          border: 0,
+          background: "none",
+          cursor: "pointer",
+        }}
+      >
+        <svg
+          viewBox="0 0 84 84"
+          aria-hidden="true"
+          style={{ position: "absolute", inset: 0, width: "100%", height: "100%", transform: "rotate(-90deg)" }}
+        >
+          <circle cx="42" cy="42" r="39" fill="none" stroke="rgba(246,239,226,0.22)" strokeWidth="2.5" />
+          <circle
+            cx="42"
+            cy="42"
+            r="39"
+            fill="none"
+            stroke="#f6efe2"
+            strokeWidth="2.5"
+            strokeLinecap="round"
+            strokeDasharray={LULLABY_CIRC}
+            strokeDashoffset={ringOffset}
+            style={{
+              transition: curItem.type === "audio" ? "stroke-dashoffset 0.2s linear" : "none",
+              animation: curPlaying && curItem.type !== "audio" ? "breathe 2.4s ease-in-out infinite" : "none",
+              opacity: curPlaying ? 1 : 0.5,
+            }}
+          />
+        </svg>
+        <span
+          style={{
+            position: "absolute",
+            inset: 8,
+            borderRadius: "50%",
+            background: "linear-gradient(160deg, #f3d38c, #c9974a)",
+            color: "#1c1530",
+            display: "grid",
+            placeItems: "center",
+            boxShadow: "0 6px 20px rgba(0,0,0,0.4), inset 0 1px 0 rgba(255,255,255,0.5)",
+            fontSize: 22,
+          }}
+        >
+          {curPlaying ? "⏸" : "▶"}
+        </span>
+      </button>
+
+      {showTimer && (
+        <div
+          onClick={() => setShowTimer(false)}
+          style={{ position: "fixed", inset: 0, zIndex: 40, background: "rgba(0,0,0,0.4)" }}
+        >
+          <div
+            onClick={(e) => e.stopPropagation()}
+            style={{
+              position: "absolute",
+              left: 0,
+              right: 0,
+              bottom: 0,
+              background: "#211c3d",
+              borderRadius: "24px 24px 0 0",
+              padding: "22px 20px calc(22px + env(safe-area-inset-bottom))",
+              textAlign: "center",
+              animation: "sheetUp 0.25s ease-out",
             }}
           >
-            <span
-              style={{
-                fontSize: 30,
-                animation: isActivePlaying ? "moonGlow 1.8s ease-in-out infinite" : "none",
-              }}
-            >
-              {l.emoji}
-            </span>
-            <span style={{ flex: 1, fontSize: 18, fontWeight: 800, color: "#F3E9C7" }}>
-              {l.label}
-            </span>
-            <span style={{ fontSize: 22 }}>{isActivePlaying ? "⏸" : "▶"}</span>
-          </button>
-        );
-      })}
+            <div style={{ fontSize: 14, fontWeight: 800, color: "#8E8BC4", marginBottom: 14 }}>
+              ⏰ Унтах таймер
+            </div>
+            <div style={{ display: "flex", justifyContent: "center", flexWrap: "wrap", gap: 10 }}>
+              {[60, 120, 180].map((mins) => {
+                const isActive = sleepMinutes === mins;
+                return (
+                  <button
+                    key={mins}
+                    className="btn3d"
+                    onClick={() => {
+                      onSetSleepTimer(isActive ? null : mins);
+                      setShowTimer(false);
+                    }}
+                    style={{
+                      borderRadius: 14,
+                      padding: "10px 18px",
+                      fontWeight: 800,
+                      fontSize: 14,
+                      color: isActive ? "#3A2E22" : "#F3E9C7",
+                      cursor: "pointer",
+                      ...depthStyle(isActive ? "#FFC93C" : "#3A3873", 3),
+                    }}
+                  >
+                    {mins / 60} цаг
+                  </button>
+                );
+              })}
+              {sleepMinutes && (
+                <button
+                  className="btn3d"
+                  onClick={() => {
+                    onSetSleepTimer(null);
+                    setShowTimer(false);
+                  }}
+                  style={{
+                    borderRadius: 14,
+                    padding: "10px 18px",
+                    fontWeight: 800,
+                    fontSize: 14,
+                    color: "#F3E9C7",
+                    cursor: "pointer",
+                    ...depthStyle("#2B2A5C", 3),
+                  }}
+                >
+                  Унтраах
+                </button>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
