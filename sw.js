@@ -1,4 +1,4 @@
-const CACHE_NAME = "byatskhan-erdemten-v19";
+const CACHE_NAME = "byatskhan-erdemten-v20";
 const SHELL_ASSETS = [
   "index.html",
   "manifest.json",
@@ -10,13 +10,14 @@ const AUDIO_ASSETS = [
   "Бүүвэйн дуу(buuvein duu).mp3",
   "Narandulam feat Munkh-Erdene,  Shinetsog Geni  - Buu Ai - Sureg ost ( lyric video ).mp3",
 ].map(encodeURI);
+const STORY_ASSETS = Array.from({ length: 8 }, (_, i) => `story/page${i + 1}.jpg`);
 
 self.addEventListener("install", (event) => {
   event.waitUntil(
     caches.open(CACHE_NAME).then((cache) =>
       cache.addAll(SHELL_ASSETS).then(() =>
-        // Cache audio one-by-one so a single failed fetch doesn't block install.
-        Promise.all(AUDIO_ASSETS.map((url) => cache.add(url).catch(() => {})))
+        // Cache audio/story images one-by-one so a single failed fetch doesn't block install.
+        Promise.all([...AUDIO_ASSETS, ...STORY_ASSETS].map((url) => cache.add(url).catch(() => {})))
       )
     )
   );
