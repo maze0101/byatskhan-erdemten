@@ -133,6 +133,29 @@ const COLORS = [
   { name: "Хүрэн", hex: "#8B5E3C" },
 ];
 
+const MONGOLIAN_WORDS = [
+  { word: "Гэр", emoji: "🏠" },
+  { word: "Ээж", emoji: "👩" },
+  { word: "Аав", emoji: "👨" },
+  { word: "Ах", emoji: "🧑" },
+  { word: "Эгч", emoji: "👧" },
+  { word: "Талх", emoji: "🍞" },
+  { word: "Сүү", emoji: "🥛" },
+  { word: "Алим", emoji: "🍎" },
+  { word: "Мод", emoji: "🌳" },
+  { word: "Наран", emoji: "☀️" },
+  { word: "Цас", emoji: "❄️" },
+  { word: "Бороо", emoji: "🌧️" },
+  { word: "Ном", emoji: "📖" },
+  { word: "Машин", emoji: "🚗" },
+  { word: "Онгоц", emoji: "✈️" },
+  { word: "Гар", emoji: "✋" },
+  { word: "Хөл", emoji: "🦶" },
+  { word: "Нүд", emoji: "👀" },
+  { word: "Гэрэл", emoji: "💡" },
+  { word: "Ундаа", emoji: "🧃" },
+];
+
 /* (theme-specific tile colors defined per profile below) */
 
 const KNOWN_WORDS = ALPHABET.filter((a) => a.word).reduce((map, a) => {
@@ -327,13 +350,14 @@ function Mascot({ bounce, emoji, hopAnim, idleAnim }) {
 /* ---------- Main App ---------- */
 
 function App() {
-  const [screen, setScreen] = useState("profile"); // profile | home | letters | numbers | animals | english | colors | words | games | game-letters | game-numbers | game-memory | game-counting | lullaby
+  const [screen, setScreen] = useState("profile"); // profile | home | letters | numbers | animals | english | colors | mongolian-words | words | games | game-letters | game-numbers | game-memory | game-counting | lullaby
   const [profile, setProfile] = useState(null); // 'boy' | 'girl' | null
   const [activeLetter, setActiveLetter] = useState(null);
   const [activeNumber, setActiveNumber] = useState(null);
   const [activeAnimal, setActiveAnimal] = useState(null);
   const [activeEnglish, setActiveEnglish] = useState(null);
   const [activeColor, setActiveColor] = useState(null);
+  const [activeMongolianWord, setActiveMongolianWord] = useState(null);
   const [caption, setCaption] = useState("Сайн байна уу! 👋");
   const [hop, setHop] = useState(false);
   const [builtWord, setBuiltWord] = useState([]);
@@ -404,6 +428,12 @@ function App() {
     setActiveColor(item);
     bumpMascot();
     setCaption(`Өнгө — ${item.name}`);
+  }
+
+  function openMongolianWord(item) {
+    setActiveMongolianWord(item);
+    bumpMascot();
+    setCaption(`${item.word} ${item.emoji}`);
   }
 
   function addToWord(letter) {
@@ -1030,6 +1060,10 @@ function App() {
 
         {screen === "colors" && <ColorsScreen onOpen={openColor} />}
 
+        {screen === "mongolian-words" && (
+          <MongolianWordsScreen onOpen={openMongolianWord} tileColors={theme.tileColors} />
+        )}
+
         {screen === "words" && (
           <WordsScreen
             builtWord={builtWord}
@@ -1223,6 +1257,14 @@ function App() {
             }}
           />
           <div style={{ fontSize: 28, fontWeight: 800, color: "#3A2E22" }}>{activeColor.name}</div>
+        </Modal>
+      )}
+
+      {/* Mongolian word modal */}
+      {activeMongolianWord && (
+        <Modal onClose={() => setActiveMongolianWord(null)}>
+          <div style={{ fontSize: 90, margin: "0 0 10px" }}>{activeMongolianWord.emoji}</div>
+          <div style={{ fontSize: 34, fontWeight: 900, color: "#3A2E22" }}>{activeMongolianWord.word}</div>
         </Modal>
       )}
     </div>
@@ -1421,6 +1463,13 @@ function HomeScreen({ onPick, onLullaby, theme }) {
           sub={`${COLORS.length} өнгө`}
           display="🎨"
           onClick={() => onPick("colors")}
+        />
+        <BigCard
+          bg="#3EA56F"
+          label="Монгол үг"
+          sub={`${MONGOLIAN_WORDS.length} үг`}
+          display="Үг"
+          onClick={() => onPick("mongolian-words")}
         />
       </div>
     </div>
@@ -1649,6 +1698,45 @@ function ColorsScreen({ onOpen }) {
           }}
         >
           <span style={{ fontSize: 13, fontWeight: 800, textShadow: "0 2px 0 rgba(0,0,0,0.25)" }}>{item.name}</span>
+        </button>
+      ))}
+    </div>
+  );
+}
+
+function MongolianWordsScreen({ onOpen, tileColors }) {
+  return (
+    <div
+      className="scrollarea"
+      style={{
+        display: "grid",
+        gridTemplateColumns: "repeat(auto-fill, minmax(90px, 1fr))",
+        gap: 12,
+        maxWidth: 640,
+        margin: "0 auto",
+      }}
+    >
+      {MONGOLIAN_WORDS.map((item, i) => (
+        <button
+          key={item.word}
+          className="tile"
+          onClick={() => onOpen(item)}
+          style={{
+            aspectRatio: "1 / 1",
+            borderRadius: 20,
+            color: "#FFFFFF",
+            display: "flex",
+            flexDirection: "column",
+            alignItems: "center",
+            justifyContent: "center",
+            gap: 4,
+            cursor: "pointer",
+            animation: `popIn 0.3s ease ${Math.min(i * 0.03, 0.6)}s both`,
+            ...depthStyle(tileColors[i % tileColors.length], 5),
+          }}
+        >
+          <span style={{ fontSize: 30 }}>{item.emoji}</span>
+          <span style={{ fontSize: 13, fontWeight: 800, textShadow: "0 2px 0 rgba(0,0,0,0.18)" }}>{item.word}</span>
         </button>
       ))}
     </div>
