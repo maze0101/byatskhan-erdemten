@@ -80,6 +80,59 @@ const NUMBERS = [
   { n: 10, word: "арав" },
 ];
 
+const ANIMALS = [
+  { name: "Муур", emoji: "🐱", sound: "Мяав!" },
+  { name: "Нохой", emoji: "🐶", sound: "Хав хав!" },
+  { name: "Үнээ", emoji: "🐮", sound: "Мөөх!" },
+  { name: "Хонь", emoji: "🐑", sound: "Бааа!" },
+  { name: "Ямаа", emoji: "🐐", sound: "Мэээ!" },
+  { name: "Гахай", emoji: "🐷", sound: "Хорх хорх!" },
+  { name: "Морь", emoji: "🐴", sound: "Иихий!" },
+  { name: "Тахиа", emoji: "🐔", sound: "Тат тат!" },
+  { name: "Баавгай", emoji: "🐻", sound: "Хррр!" },
+  { name: "Шувуу", emoji: "🐦", sound: "Жив жив!" },
+];
+
+const ENGLISH_WORDS = [
+  { letter: "A", word: "Apple", emoji: "🍎" },
+  { letter: "B", word: "Ball", emoji: "⚽" },
+  { letter: "C", word: "Cat", emoji: "🐱" },
+  { letter: "D", word: "Dog", emoji: "🐶" },
+  { letter: "E", word: "Egg", emoji: "🥚" },
+  { letter: "F", word: "Fish", emoji: "🐟" },
+  { letter: "G", word: "Grapes", emoji: "🍇" },
+  { letter: "H", word: "Hat", emoji: "🎩" },
+  { letter: "I", word: "Ice cream", emoji: "🍦" },
+  { letter: "J", word: "Juice", emoji: "🧃" },
+  { letter: "K", word: "Kite", emoji: "🪁" },
+  { letter: "L", word: "Lion", emoji: "🦁" },
+  { letter: "M", word: "Moon", emoji: "🌙" },
+  { letter: "N", word: "Nose", emoji: "👃" },
+  { letter: "O", word: "Orange", emoji: "🍊" },
+  { letter: "P", word: "Pig", emoji: "🐷" },
+  { letter: "Q", word: "Queen", emoji: "👸" },
+  { letter: "R", word: "Rabbit", emoji: "🐰" },
+  { letter: "S", word: "Sun", emoji: "☀️" },
+  { letter: "T", word: "Tiger", emoji: "🐯" },
+  { letter: "U", word: "Umbrella", emoji: "☂️" },
+  { letter: "V", word: "Van", emoji: "🚐" },
+  { letter: "W", word: "Watch", emoji: "⌚" },
+  { letter: "X", word: "X-ray", emoji: "🩻" },
+  { letter: "Y", word: "Yo-yo", emoji: "🪀" },
+  { letter: "Z", word: "Zebra", emoji: "🦓" },
+];
+
+const COLORS = [
+  { name: "Улаан", hex: "#E74C3C" },
+  { name: "Улбар шар", hex: "#F39C12" },
+  { name: "Шар", hex: "#F1C40F" },
+  { name: "Ногоон", hex: "#2ECC71" },
+  { name: "Хөх", hex: "#3498DB" },
+  { name: "Нил ягаан", hex: "#9B59B6" },
+  { name: "Ягаан", hex: "#FF6FA5" },
+  { name: "Хүрэн", hex: "#8B5E3C" },
+];
+
 /* (theme-specific tile colors defined per profile below) */
 
 const KNOWN_WORDS = ALPHABET.filter((a) => a.word).reduce((map, a) => {
@@ -274,10 +327,13 @@ function Mascot({ bounce, emoji, hopAnim, idleAnim }) {
 /* ---------- Main App ---------- */
 
 function App() {
-  const [screen, setScreen] = useState("profile"); // profile | home | letters | numbers | words | games | game-letters | game-numbers | game-memory | game-counting | lullaby
+  const [screen, setScreen] = useState("profile"); // profile | home | letters | numbers | animals | english | colors | words | games | game-letters | game-numbers | game-memory | game-counting | lullaby
   const [profile, setProfile] = useState(null); // 'boy' | 'girl' | null
   const [activeLetter, setActiveLetter] = useState(null);
   const [activeNumber, setActiveNumber] = useState(null);
+  const [activeAnimal, setActiveAnimal] = useState(null);
+  const [activeEnglish, setActiveEnglish] = useState(null);
+  const [activeColor, setActiveColor] = useState(null);
   const [caption, setCaption] = useState("Сайн байна уу! 👋");
   const [hop, setHop] = useState(false);
   const [builtWord, setBuiltWord] = useState([]);
@@ -330,6 +386,24 @@ function App() {
     setActiveNumber(item);
     bumpMascot();
     setCaption(`${item.n} — ${item.word}`);
+  }
+
+  function openAnimal(item) {
+    setActiveAnimal(item);
+    bumpMascot();
+    setCaption(`${item.name} — ${item.sound}`);
+  }
+
+  function openEnglish(item) {
+    setActiveEnglish(item);
+    bumpMascot();
+    setCaption(`${item.letter} — ${item.word}`);
+  }
+
+  function openColor(item) {
+    setActiveColor(item);
+    bumpMascot();
+    setCaption(`Өнгө — ${item.name}`);
   }
 
   function addToWord(letter) {
@@ -946,6 +1020,16 @@ function App() {
           <NumbersScreen onOpen={openNumber} tileColors={theme.tileColors} />
         )}
 
+        {screen === "animals" && (
+          <AnimalsScreen onOpen={openAnimal} tileColors={theme.tileColors} />
+        )}
+
+        {screen === "english" && (
+          <EnglishScreen onOpen={openEnglish} tileColors={theme.tileColors} />
+        )}
+
+        {screen === "colors" && <ColorsScreen onOpen={openColor} />}
+
         {screen === "words" && (
           <WordsScreen
             builtWord={builtWord}
@@ -1101,6 +1185,44 @@ function App() {
               </span>
             ))}
           </div>
+        </Modal>
+      )}
+
+      {/* Animal modal */}
+      {activeAnimal && (
+        <Modal onClose={() => setActiveAnimal(null)}>
+          <div style={{ fontSize: 110, lineHeight: 1 }}>{activeAnimal.emoji}</div>
+          <div style={{ fontSize: 26, fontWeight: 800, color: "#B5773A", margin: "10px 0 4px" }}>
+            {activeAnimal.name}
+          </div>
+          <div style={{ fontSize: 30, fontWeight: 900, color: "#3A2E22" }}>{activeAnimal.sound}</div>
+        </Modal>
+      )}
+
+      {/* English word modal */}
+      {activeEnglish && (
+        <Modal onClose={() => setActiveEnglish(null)}>
+          <div style={{ fontSize: 90, fontWeight: 900, color: "#3A2E22", lineHeight: 1 }}>
+            {activeEnglish.letter}
+          </div>
+          <div style={{ fontSize: 60, margin: "10px 0" }}>{activeEnglish.emoji}</div>
+          <div style={{ fontSize: 28, fontWeight: 800, color: "#B5773A" }}>{activeEnglish.word}</div>
+        </Modal>
+      )}
+
+      {/* Color modal */}
+      {activeColor && (
+        <Modal onClose={() => setActiveColor(null)}>
+          <div
+            style={{
+              width: 130,
+              height: 130,
+              borderRadius: 26,
+              margin: "0 auto 16px",
+              ...depthStyle(activeColor.hex, 6),
+            }}
+          />
+          <div style={{ fontSize: 28, fontWeight: 800, color: "#3A2E22" }}>{activeColor.name}</div>
         </Modal>
       )}
     </div>
@@ -1279,6 +1401,27 @@ function HomeScreen({ onPick, onLullaby, theme }) {
           display="🌙"
           onClick={onLullaby}
         />
+        <BigCard
+          bg="#2FB6A3"
+          label="Амьтны дуу"
+          sub="Мяав! Хав!"
+          display="🐾"
+          onClick={() => onPick("animals")}
+        />
+        <BigCard
+          bg="#7B72D6"
+          label="Англи үг"
+          sub={`${ENGLISH_WORDS.length} үг`}
+          display="ABC"
+          onClick={() => onPick("english")}
+        />
+        <BigCard
+          bg="#F2789F"
+          label="Өнгө"
+          sub={`${COLORS.length} өнгө`}
+          display="🎨"
+          onClick={() => onPick("colors")}
+        />
       </div>
     </div>
   );
@@ -1392,6 +1535,120 @@ function NumbersScreen({ onOpen, tileColors }) {
           }}
         >
           {item.n}
+        </button>
+      ))}
+    </div>
+  );
+}
+
+function AnimalsScreen({ onOpen, tileColors }) {
+  return (
+    <div
+      className="scrollarea"
+      style={{
+        display: "grid",
+        gridTemplateColumns: "repeat(auto-fill, minmax(90px, 1fr))",
+        gap: 12,
+        maxWidth: 640,
+        margin: "0 auto",
+      }}
+    >
+      {ANIMALS.map((item, i) => (
+        <button
+          key={item.name}
+          className="tile"
+          onClick={() => onOpen(item)}
+          style={{
+            aspectRatio: "1 / 1",
+            borderRadius: 20,
+            color: "#FFFFFF",
+            display: "flex",
+            flexDirection: "column",
+            alignItems: "center",
+            justifyContent: "center",
+            gap: 4,
+            cursor: "pointer",
+            animation: `popIn 0.3s ease ${Math.min(i * 0.03, 0.6)}s both`,
+            ...depthStyle(tileColors[i % tileColors.length], 5),
+          }}
+        >
+          <span style={{ fontSize: 32 }}>{item.emoji}</span>
+          <span style={{ fontSize: 13, fontWeight: 800, textShadow: "0 2px 0 rgba(0,0,0,0.18)" }}>{item.name}</span>
+        </button>
+      ))}
+    </div>
+  );
+}
+
+function EnglishScreen({ onOpen, tileColors }) {
+  return (
+    <div
+      className="scrollarea"
+      style={{
+        display: "grid",
+        gridTemplateColumns: "repeat(auto-fill, minmax(90px, 1fr))",
+        gap: 12,
+        maxWidth: 640,
+        margin: "0 auto",
+      }}
+    >
+      {ENGLISH_WORDS.map((item, i) => (
+        <button
+          key={item.letter}
+          className="tile"
+          onClick={() => onOpen(item)}
+          style={{
+            aspectRatio: "1 / 1",
+            borderRadius: 20,
+            color: "#FFFFFF",
+            display: "flex",
+            flexDirection: "column",
+            alignItems: "center",
+            justifyContent: "center",
+            gap: 4,
+            cursor: "pointer",
+            animation: `popIn 0.3s ease ${Math.min(i * 0.02, 0.6)}s both`,
+            ...depthStyle(tileColors[i % tileColors.length], 5),
+          }}
+        >
+          <span style={{ fontSize: 26 }}>{item.emoji}</span>
+          <span style={{ fontSize: 15, fontWeight: 900, textShadow: "0 2px 0 rgba(0,0,0,0.18)" }}>{item.letter}</span>
+        </button>
+      ))}
+    </div>
+  );
+}
+
+function ColorsScreen({ onOpen }) {
+  return (
+    <div
+      style={{
+        display: "grid",
+        gridTemplateColumns: "repeat(auto-fill, minmax(90px, 1fr))",
+        gap: 12,
+        maxWidth: 560,
+        margin: "0 auto",
+      }}
+    >
+      {COLORS.map((item, i) => (
+        <button
+          key={item.name}
+          className="tile"
+          onClick={() => onOpen(item)}
+          style={{
+            aspectRatio: "1 / 1",
+            borderRadius: 20,
+            color: "#FFFFFF",
+            display: "flex",
+            alignItems: "flex-end",
+            justifyContent: "center",
+            padding: "0 0 10px",
+            cursor: "pointer",
+            animation: `popIn 0.3s ease ${i * 0.04}s both`,
+            ...depthStyle(item.hex, 5),
+          }}
+        >
+          <span style={{ fontSize: 13, fontWeight: 800, textShadow: "0 2px 0 rgba(0,0,0,0.25)" }}>{item.name}</span>
         </button>
       ))}
     </div>
