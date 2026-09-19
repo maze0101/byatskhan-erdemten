@@ -1881,25 +1881,34 @@ function MusicBoxScene({ idx, lacquer, playing }) {
 function Dancer({ accent }) {
   return (
     <svg viewBox="0 0 100 160" aria-hidden="true" style={{ width: "100%", height: "100%", overflow: "visible" }}>
-      <path d="M47 102 L46 149" stroke="#f3ede4" strokeWidth="4.6" strokeLinecap="round" fill="none" />
-      <path
-        d="M53 102 Q76 108 67 124 L52 128"
-        stroke="#f3ede4"
-        strokeWidth="4.6"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-        fill="none"
-      />
-      <ellipse cx="46" cy="151" rx="3.4" ry="3.6" fill="#f2c4c0" />
-      <ellipse cx="51" cy="128.5" rx="3.4" ry="2.8" fill="#f2c4c0" />
-      <ellipse cx="50" cy="107" rx="32" ry="6.5" fill="#dcd2c4" />
-      <ellipse cx="50" cy="104" rx="37" ry="8" fill="#fbf7ef" />
-      <ellipse cx="50" cy="103" rx="37" ry="8" fill="none" stroke="rgba(0,0,0,0.1)" strokeWidth="1" />
-      <path d="M42 64 Q50 59 58 64 L56 98 Q50 103 44 98 Z" fill={accent} />
-      <path d="M44 69 Q29 52 44 31 M56 69 Q71 52 56 31" stroke="#efd9c9" strokeWidth="4" strokeLinecap="round" fill="none" />
+      {/* legs + boots */}
+      <path d="M44 100 L42 148" stroke="#2a3a5c" strokeWidth="5" strokeLinecap="round" fill="none" />
+      <path d="M56 100 L58 148" stroke="#2a3a5c" strokeWidth="5" strokeLinecap="round" fill="none" />
+      <ellipse cx="42" cy="150" rx="4.2" ry="3.4" fill="#1c1530" />
+      <ellipse cx="58" cy="150" rx="4.2" ry="3.4" fill="#1c1530" />
+
+      {/* tunic + sash + collar */}
+      <path d="M43 64 Q50 60 57 64 L55 100 Q50 104 45 100 Z" fill={accent} />
+      <path d="M44 66 L57 96" stroke="#f6dc94" strokeWidth="2.4" strokeLinecap="round" />
+      <path d="M46 64 L50 69 L54 64" stroke="#fff" strokeWidth="2" fill="none" strokeLinecap="round" />
+
+      {/* arms */}
+      <path d="M57 68 Q74 58 78 40" stroke="#efd9c9" strokeWidth="4" strokeLinecap="round" fill="none" />
+      <path d="M43 68 Q30 74 34 86" stroke="#efd9c9" strokeWidth="4" strokeLinecap="round" fill="none" />
+      <ellipse cx="78.5" cy="38" rx="3.2" ry="3.4" fill="#f2c4c0" />
+      <ellipse cx="34" cy="87" rx="3.2" ry="3.4" fill="#f2c4c0" />
+
+      {/* head, hair, crown */}
       <circle cx="50" cy="55" r="7.5" fill="#efd9c9" />
-      <circle cx="50" cy="45.5" r="5.4" fill="#2a1a1c" />
-      <path d="M42.6 53 Q50 46.5 57.4 53 Q50 49.5 42.6 53Z" fill="#2a1a1c" />
+      <path d="M43 53 Q50 46.5 57 53 Q50 50 43 53Z" fill="#2a1a1c" />
+      <path
+        d="M44 47 L46 41 L49 45 L50 39.5 L51 45 L54 41 L56 47 Z"
+        fill="#f6dc94"
+        stroke="#b98a3e"
+        strokeWidth="0.6"
+        strokeLinejoin="round"
+      />
+      <circle cx="50" cy="43.5" r="1.3" fill="#e0645a" />
     </svg>
   );
 }
