@@ -937,10 +937,6 @@ function App() {
           0%, 100% { transform: translateY(0) rotate(-4deg); }
           50% { transform: translateY(-8px) rotate(4deg); }
         }
-        @keyframes sheetUp {
-          from { transform: translateY(100%); }
-          to { transform: translateY(0); }
-        }
         .lullaby-track { scrollbar-width: none; }
         .lullaby-track::-webkit-scrollbar { display: none; }
         .tile, .btn3d {
@@ -2532,7 +2528,6 @@ function LullabyPage({ item, idx, playing, profile }) {
 function LullabyScreen({ isPlaying, activeLullaby, onSelect, profile, sleepMinutes, sleepRemainingSec, onSetSleepTimer, playProgress, onBack }) {
   const entries = Object.entries(LULLABIES);
   const [page, setPage] = useState(() => Math.max(0, entries.findIndex(([k]) => k === activeLullaby)));
-  const [showTimer, setShowTimer] = useState(false);
   const trackRef = useRef(null);
   const scrollTimeout = useRef(null);
 
@@ -2564,7 +2559,7 @@ function LullabyScreen({ isPlaying, activeLullaby, onSelect, profile, sleepMinut
           position: "absolute",
           zIndex: 6,
           left: 64,
-          right: 64,
+          right: 14,
           top: "max(14px, env(safe-area-inset-top))",
           display: "flex",
           gap: 6,
@@ -2610,37 +2605,6 @@ function LullabyScreen({ isPlaying, activeLullaby, onSelect, profile, sleepMinut
       >
         🏠
       </button>
-      <button
-        onClick={() => setShowTimer((s) => !s)}
-        aria-label="Унтах таймер"
-        style={{
-          position: "absolute",
-          zIndex: 6,
-          right: 14,
-          top: "calc(max(14px, env(safe-area-inset-top)) - 6px)",
-          minWidth: 40,
-          height: 40,
-          padding: sleepMinutes ? "0 10px" : 0,
-          borderRadius: 20,
-          border: "none",
-          cursor: "pointer",
-          background: sleepMinutes ? "#FFC93C" : "rgba(255,255,255,0.14)",
-          color: sleepMinutes ? "#3A2E22" : "#F3E9C7",
-          fontSize: 18,
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "center",
-          gap: 5,
-        }}
-      >
-        <span>⏰</span>
-        {sleepMinutes && (
-          <span style={{ fontSize: 13, fontWeight: 800, fontVariantNumeric: "tabular-nums" }}>
-            {formatClock(sleepRemainingSec)}
-          </span>
-        )}
-      </button>
-
       <div
         ref={trackRef}
         className="lullaby-track"
@@ -2660,28 +2624,64 @@ function LullabyScreen({ isPlaying, activeLullaby, onSelect, profile, sleepMinut
         ))}
       </div>
 
-      {sleepMinutes && (
-        <div
-          style={{
-            position: "absolute",
-            zIndex: 6,
-            left: "50%",
-            bottom: "calc(max(22px, env(safe-area-inset-bottom)) + 92px)",
-            transform: "translateX(-50%)",
-            background: "rgba(33,28,61,0.85)",
-            border: "1px solid rgba(243,233,199,0.35)",
-            borderRadius: 20,
-            padding: "6px 14px",
-            fontSize: 13,
-            fontWeight: 800,
-            color: "#F3E9C7",
-            whiteSpace: "nowrap",
-            fontVariantNumeric: "tabular-nums",
-          }}
-        >
-          ⏰ {formatClock(sleepRemainingSec)} дараа унтрана
+      <div
+        style={{
+          position: "absolute",
+          zIndex: 6,
+          left: 14,
+          right: 14,
+          bottom: "calc(max(22px, env(safe-area-inset-bottom)) + 92px)",
+          display: "flex",
+          flexDirection: "column",
+          alignItems: "center",
+          gap: 8,
+        }}
+      >
+        <div style={{ fontSize: 12, fontWeight: 800, color: "#F3E9C7", opacity: 0.9, fontVariantNumeric: "tabular-nums" }}>
+          ⏰ Унтах таймер
+          {sleepMinutes && ` — ${formatClock(sleepRemainingSec)} дараа унтрана`}
         </div>
-      )}
+        <div style={{ display: "flex", flexWrap: "wrap", justifyContent: "center", gap: 8 }}>
+          {[60, 120, 180].map((mins) => {
+            const isActive = sleepMinutes === mins;
+            return (
+              <button
+                key={mins}
+                className="btn3d"
+                onClick={() => onSetSleepTimer(isActive ? null : mins)}
+                style={{
+                  borderRadius: 14,
+                  padding: "7px 14px",
+                  fontWeight: 800,
+                  fontSize: 13,
+                  color: isActive ? "#3A2E22" : "#F3E9C7",
+                  cursor: "pointer",
+                  ...depthStyle(isActive ? "#FFC93C" : "#3A3873", 3),
+                }}
+              >
+                {mins / 60} цаг
+              </button>
+            );
+          })}
+          {sleepMinutes && (
+            <button
+              className="btn3d"
+              onClick={() => onSetSleepTimer(null)}
+              style={{
+                borderRadius: 14,
+                padding: "7px 14px",
+                fontWeight: 800,
+                fontSize: 13,
+                color: "#F3E9C7",
+                cursor: "pointer",
+                ...depthStyle("#2B2A5C", 3),
+              }}
+            >
+              Унтраах
+            </button>
+          )}
+        </div>
+      </div>
 
       <button
         onClick={() => onSelect(curKey)}
@@ -2740,83 +2740,6 @@ function LullabyScreen({ isPlaying, activeLullaby, onSelect, profile, sleepMinut
         </span>
       </button>
 
-      {showTimer && (
-        <div
-          onClick={() => setShowTimer(false)}
-          style={{ position: "fixed", inset: 0, zIndex: 40, background: "rgba(0,0,0,0.4)" }}
-        >
-          <div
-            onClick={(e) => e.stopPropagation()}
-            style={{
-              position: "absolute",
-              left: 0,
-              right: 0,
-              bottom: 0,
-              background: "#211c3d",
-              borderRadius: "24px 24px 0 0",
-              padding: "22px 20px calc(22px + env(safe-area-inset-bottom))",
-              textAlign: "center",
-              animation: "sheetUp 0.25s ease-out",
-            }}
-          >
-            <div style={{ fontSize: 14, fontWeight: 800, color: "#8E8BC4", marginBottom: 14 }}>
-              ⏰ Унтах таймер
-              {sleepMinutes && (
-                <span style={{ color: "#F3E9C7", fontVariantNumeric: "tabular-nums" }}>
-                  {" — "}
-                  {formatClock(sleepRemainingSec)} үлдлээ
-                </span>
-              )}
-            </div>
-            <div style={{ display: "flex", justifyContent: "center", flexWrap: "wrap", gap: 10 }}>
-              {[60, 120, 180].map((mins) => {
-                const isActive = sleepMinutes === mins;
-                return (
-                  <button
-                    key={mins}
-                    className="btn3d"
-                    onClick={() => {
-                      onSetSleepTimer(isActive ? null : mins);
-                      setShowTimer(false);
-                    }}
-                    style={{
-                      borderRadius: 14,
-                      padding: "10px 18px",
-                      fontWeight: 800,
-                      fontSize: 14,
-                      color: isActive ? "#3A2E22" : "#F3E9C7",
-                      cursor: "pointer",
-                      ...depthStyle(isActive ? "#FFC93C" : "#3A3873", 3),
-                    }}
-                  >
-                    {mins / 60} цаг
-                  </button>
-                );
-              })}
-              {sleepMinutes && (
-                <button
-                  className="btn3d"
-                  onClick={() => {
-                    onSetSleepTimer(null);
-                    setShowTimer(false);
-                  }}
-                  style={{
-                    borderRadius: 14,
-                    padding: "10px 18px",
-                    fontWeight: 800,
-                    fontSize: 14,
-                    color: "#F3E9C7",
-                    cursor: "pointer",
-                    ...depthStyle("#2B2A5C", 3),
-                  }}
-                >
-                  Унтраах
-                </button>
-              )}
-            </div>
-          </div>
-        </div>
-      )}
     </div>
   );
 }
