@@ -380,6 +380,7 @@ function App() {
   const [isPlayingLullaby, setIsPlayingLullaby] = useState(false);
   const [activeLullaby, setActiveLullaby] = useState("steppe");
   const [sleepMinutes, setSleepMinutes] = useState(null);
+  const [sleepRemainingSec, setSleepRemainingSec] = useState(0);
   const [playProgress, setPlayProgress] = useState(0);
   const theme = getTheme(profile);
   const audioCtxRef = useRef(null);
@@ -390,6 +391,8 @@ function App() {
   const noiseGainRef = useRef(null);
   const audioFileRef = useRef(null);
   const sleepTimeoutRef = useRef(null);
+  const sleepEndsAtRef = useRef(null);
+  const sleepTickRef = useRef(null);
 
   function bumpMascot() {
     setHop(true);
@@ -735,13 +738,26 @@ function App() {
       clearTimeout(sleepTimeoutRef.current);
       sleepTimeoutRef.current = null;
     }
+    if (sleepTickRef.current) {
+      clearInterval(sleepTickRef.current);
+      sleepTickRef.current = null;
+    }
     setSleepMinutes(minutes);
     if (minutes) {
+      const endsAt = Date.now() + minutes * 60 * 1000;
+      sleepEndsAtRef.current = endsAt;
+      setSleepRemainingSec(minutes * 60);
+      sleepTickRef.current = setInterval(() => {
+        setSleepRemainingSec(Math.max(0, Math.round((sleepEndsAtRef.current - Date.now()) / 1000)));
+      }, 1000);
       sleepTimeoutRef.current = setTimeout(() => {
         sleepTimeoutRef.current = null;
         stopLullaby();
         setCaption("Тайван нойрсоорой... 💤");
       }, minutes * 60 * 1000);
+    } else {
+      sleepEndsAtRef.current = null;
+      setSleepRemainingSec(0);
     }
   }
 
@@ -752,7 +768,13 @@ function App() {
       clearTimeout(sleepTimeoutRef.current);
       sleepTimeoutRef.current = null;
     }
+    if (sleepTickRef.current) {
+      clearInterval(sleepTickRef.current);
+      sleepTickRef.current = null;
+    }
+    sleepEndsAtRef.current = null;
     setSleepMinutes(null);
+    setSleepRemainingSec(0);
     if (lullabyTimeoutRef.current) clearTimeout(lullabyTimeoutRef.current);
     if (audioFileRef.current) {
       audioFileRef.current.pause();
@@ -1126,6 +1148,7 @@ function App() {
             onSelect={selectLullaby}
             profile={profile}
             sleepMinutes={sleepMinutes}
+            sleepRemainingSec={sleepRemainingSec}
             onSetSleepTimer={setLullabySleepTimer}
             playProgress={playProgress}
             onBack={() => setScreen("home")}
@@ -2176,6 +2199,15 @@ function CountingGameScreen({ target, count, score, feedback, accent, onTap, onR
 
 const LULLABY_CIRC = 245.04;
 
+function formatClock(totalSec) {
+  const sec = Math.max(0, totalSec);
+  const h = Math.floor(sec / 3600);
+  const m = Math.floor((sec % 3600) / 60);
+  const s = sec % 60;
+  const pad = (n) => String(n).padStart(2, "0");
+  return h > 0 ? `${h}:${pad(m)}:${pad(s)}` : `${m}:${pad(s)}`;
+}
+
 function MusicBoxScene({ idx, lacquer, playing }) {
   const tines = [];
   for (let k = 0; k < 12; k++) {
@@ -2497,7 +2529,7 @@ function LullabyPage({ item, idx, playing, profile }) {
   );
 }
 
-function LullabyScreen({ isPlaying, activeLullaby, onSelect, profile, sleepMinutes, onSetSleepTimer, playProgress, onBack }) {
+function LullabyScreen({ isPlaying, activeLullaby, onSelect, profile, sleepMinutes, sleepRemainingSec, onSetSleepTimer, playProgress, onBack }) {
   const entries = Object.entries(LULLABIES);
   const [page, setPage] = useState(() => Math.max(0, entries.findIndex(([k]) => k === activeLullaby)));
   const [showTimer, setShowTimer] = useState(false);
@@ -2586,19 +2618,27 @@ function LullabyScreen({ isPlaying, activeLullaby, onSelect, profile, sleepMinut
           zIndex: 6,
           right: 14,
           top: "calc(max(14px, env(safe-area-inset-top)) - 6px)",
-          width: 40,
+          minWidth: 40,
           height: 40,
-          borderRadius: "50%",
+          padding: sleepMinutes ? "0 10px" : 0,
+          borderRadius: 20,
           border: "none",
           cursor: "pointer",
           background: sleepMinutes ? "#FFC93C" : "rgba(255,255,255,0.14)",
           color: sleepMinutes ? "#3A2E22" : "#F3E9C7",
           fontSize: 18,
-          display: "grid",
-          placeItems: "center",
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+          gap: 5,
         }}
       >
-        ⏰
+        <span>⏰</span>
+        {sleepMinutes && (
+          <span style={{ fontSize: 13, fontWeight: 800, fontVariantNumeric: "tabular-nums" }}>
+            {formatClock(sleepRemainingSec)}
+          </span>
+        )}
       </button>
 
       <div
@@ -2698,6 +2738,12 @@ function LullabyScreen({ isPlaying, activeLullaby, onSelect, profile, sleepMinut
           >
             <div style={{ fontSize: 14, fontWeight: 800, color: "#8E8BC4", marginBottom: 14 }}>
               ⏰ Унтах таймер
+              {sleepMinutes && (
+                <span style={{ color: "#F3E9C7", fontVariantNumeric: "tabular-nums" }}>
+                  {" — "}
+                  {formatClock(sleepRemainingSec)} үлдлээ
+                </span>
+              )}
             </div>
             <div style={{ display: "flex", justifyContent: "center", flexWrap: "wrap", gap: 10 }}>
               {[60, 120, 180].map((mins) => {
