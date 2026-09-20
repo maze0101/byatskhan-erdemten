@@ -156,8 +156,6 @@ const MONGOLIAN_WORDS = [
   { word: "Ундаа", emoji: "🧃" },
 ];
 
-const STORY_IMAGES = Array.from({ length: 8 }, (_, i) => `story/page${i + 1}.jpg`);
-
 /* (theme-specific tile colors defined per profile below) */
 
 const KNOWN_WORDS = ALPHABET.filter((a) => a.word).reduce((map, a) => {
@@ -352,8 +350,12 @@ function Mascot({ bounce, emoji, hopAnim, idleAnim }) {
 /* ---------- Main App ---------- */
 
 function App() {
-  const [screen, setScreen] = useState("profile"); // profile | home | letters | numbers | animals | english | colors | mongolian-words | words | games | game-letters | game-numbers | game-memory | game-counting | lullaby | story
-  const [profile, setProfile] = useState(null); // 'boy' | 'girl' | null
+  const [screen, setScreen] = useState(() => {
+    try { return localStorage.getItem("profile") ? "home" : "profile"; } catch (e) { return "profile"; }
+  }); // profile | home | letters | numbers | animals | english | colors | mongolian-words | words | games | game-letters | game-numbers | game-memory | game-counting | lullaby
+  const [profile, setProfile] = useState(() => {
+    try { return localStorage.getItem("profile") || null; } catch (e) { return null; }
+  }); // 'boy' | 'girl' | null
   const [activeLetter, setActiveLetter] = useState(null);
   const [activeNumber, setActiveNumber] = useState(null);
   const [activeAnimal, setActiveAnimal] = useState(null);
@@ -830,6 +832,7 @@ function App() {
 
   function chooseProfile(key) {
     setProfile(key);
+    try { localStorage.setItem("profile", key); } catch (e) {}
     setScreen("home");
     setCaption(`Сайн уу, ${PROFILES[key].label} минь! 👋`);
   }
@@ -965,7 +968,7 @@ function App() {
       `}</style>
 
       {/* Day scene */}
-      {screen !== "lullaby" && screen !== "story" && (
+      {screen !== "lullaby" && (
         <>
           <div
             style={{
@@ -1034,7 +1037,7 @@ function App() {
 
       {/* Content */}
       <div style={{ position: "relative", zIndex: 2, padding: "20px 16px 130px" }}>
-        {screen !== "lullaby" && screen !== "story" && (
+        {screen !== "lullaby" && (
           <Header
             screen={screen}
             onHome={() => setScreen("home")}
@@ -1152,12 +1155,10 @@ function App() {
             onBack={() => setScreen("home")}
           />
         )}
-
-        {screen === "story" && <StoryScreen onBack={() => setScreen("home")} />}
       </div>
 
       {/* Mascot + caption bar */}
-      {screen !== "lullaby" && screen !== "story" && (
+      {screen !== "lullaby" && (
         <div
           style={{
             position: "fixed",
@@ -1497,9 +1498,9 @@ function HomeScreen({ onPick, onLullaby, theme }) {
         <BigCard
           bg="#D98E4A"
           label="Үлгэр"
-          sub="Цагаан хургын аялал"
+          sub="9 ном"
           display="📖"
-          onClick={() => onPick("story")}
+          onClick={() => { window.location.href = "Tsagaan_khurgyn_tuuhuud_9_nom.html"; }}
         />
       </div>
     </div>
@@ -2751,181 +2752,6 @@ function LullabyScreen({ isPlaying, activeLullaby, onSelect, profile, sleepMinut
         </span>
       </button>
 
-    </div>
-  );
-}
-
-function StoryImagePage({ src }) {
-  return (
-    <div
-      style={{
-        position: "relative",
-        flex: "0 0 100%",
-        height: "100%",
-        scrollSnapAlign: "start",
-        scrollSnapStop: "always",
-        display: "flex",
-        alignItems: "center",
-        justifyContent: "center",
-        background: "#FCEFC7",
-        overflow: "hidden",
-      }}
-    >
-      <img src={src} alt="" draggable="false" style={{ width: "100%", height: "100%", objectFit: "contain" }} />
-    </div>
-  );
-}
-
-function StoryScreen({ onBack }) {
-  const total = STORY_IMAGES.length;
-  const [page, setPage] = useState(0);
-  const trackRef = useRef(null);
-  const scrollTimeout = useRef(null);
-
-  function goTo(i) {
-    const clamped = Math.max(0, Math.min(total - 1, i));
-    setPage(clamped);
-    const el = trackRef.current;
-    if (el) el.scrollTo({ left: clamped * el.clientWidth, behavior: "smooth" });
-  }
-
-  function handleScroll() {
-    const el = trackRef.current;
-    if (!el) return;
-    clearTimeout(scrollTimeout.current);
-    scrollTimeout.current = setTimeout(() => {
-      const i = Math.round(el.scrollLeft / el.clientWidth);
-      setPage((p) => (i !== p ? i : p));
-    }, 80);
-  }
-
-  return (
-    <div style={{ position: "fixed", inset: 0, zIndex: 30, background: "#171225" }}>
-      <div
-        style={{
-          position: "absolute",
-          zIndex: 6,
-          left: 64,
-          right: 14,
-          top: "max(14px, env(safe-area-inset-top))",
-          display: "flex",
-          gap: 5,
-        }}
-      >
-        {Array.from({ length: total }).map((_, i) => (
-          <button
-            key={i}
-            onClick={() => goTo(i)}
-            aria-label={`Хуудас ${i + 1}`}
-            style={{
-              flex: 1,
-              height: 3,
-              border: 0,
-              padding: 0,
-              borderRadius: 2,
-              background: i === page ? "#3A2E22" : "rgba(58,46,34,0.25)",
-              cursor: "pointer",
-            }}
-          />
-        ))}
-      </div>
-
-      <button
-        onClick={onBack}
-        aria-label="Нүүр"
-        style={{
-          position: "absolute",
-          zIndex: 6,
-          left: 14,
-          top: "calc(max(14px, env(safe-area-inset-top)) - 6px)",
-          width: 40,
-          height: 40,
-          borderRadius: "50%",
-          border: "none",
-          cursor: "pointer",
-          background: "rgba(255,255,255,0.55)",
-          color: "#3A2E22",
-          fontSize: 18,
-          display: "grid",
-          placeItems: "center",
-        }}
-      >
-        🏠
-      </button>
-
-      <div
-        ref={trackRef}
-        className="lullaby-track"
-        onScroll={handleScroll}
-        style={{
-          display: "flex",
-          height: "100%",
-          width: "100%",
-          overflowX: "auto",
-          overflowY: "hidden",
-          scrollSnapType: "x mandatory",
-          overscrollBehaviorX: "contain",
-        }}
-      >
-        {STORY_IMAGES.map((src, i) => (
-          <StoryImagePage key={i} src={src} />
-        ))}
-      </div>
-
-      <div
-        style={{
-          position: "absolute",
-          zIndex: 6,
-          left: 0,
-          right: 0,
-          bottom: "max(18px, env(safe-area-inset-bottom))",
-          display: "flex",
-          justifyContent: "space-between",
-          padding: "0 18px",
-          pointerEvents: "none",
-        }}
-      >
-        <button
-          onClick={() => goTo(page - 1)}
-          disabled={page === 0}
-          style={{
-            pointerEvents: "auto",
-            width: 52,
-            height: 52,
-            borderRadius: "50%",
-            border: "none",
-            cursor: page === 0 ? "default" : "pointer",
-            opacity: page === 0 ? 0.3 : 1,
-            background: "linear-gradient(160deg, #f3d38c, #c9974a)",
-            color: "#1c1530",
-            fontSize: 20,
-            fontWeight: 900,
-            boxShadow: "0 6px 16px rgba(0,0,0,0.35)",
-          }}
-        >
-          ◀
-        </button>
-        <button
-          onClick={() => goTo(page + 1)}
-          disabled={page === total - 1}
-          style={{
-            pointerEvents: "auto",
-            width: 52,
-            height: 52,
-            borderRadius: "50%",
-            border: "none",
-            cursor: page === total - 1 ? "default" : "pointer",
-            opacity: page === total - 1 ? 0.3 : 1,
-            background: "linear-gradient(160deg, #f3d38c, #c9974a)",
-            color: "#1c1530",
-            fontSize: 20,
-            fontWeight: 900,
-            boxShadow: "0 6px 16px rgba(0,0,0,0.35)",
-          }}
-        >
-          ▶
-        </button>
-      </div>
     </div>
   );
 }
