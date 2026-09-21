@@ -1323,13 +1323,6 @@ function Header({ screen, onHome, profile, onChangeProfile, titleColor }) {
   return (
     <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 18 }}>
       <div style={{ display: "flex", alignItems: "center", gap: 10, fontSize: 26, fontWeight: 900, color: screen === "lullaby" ? "#F3E9C7" : titleColor }}>
-        <img
-          src="icon-192.png"
-          alt=""
-          width={44}
-          height={44}
-          style={{ borderRadius: 12, boxShadow: "0 3px 8px rgba(0,0,0,0.25)" }}
-        />
         Бяцхан Эрдэмтэн
       </div>
       {screen !== "home" && screen !== "profile" && (
