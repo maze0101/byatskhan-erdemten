@@ -10,6 +10,7 @@ const AUDIO_ASSETS = [
   "Baby Sleep MusicBaby Sleep Instantly in 3 MinutesCalm Night &Beat InsomniaMozart & Brahms Lullaby.mp3",
   "Бүүвэйн дуу(buuvein duu).mp3",
   "Narandulam feat Munkh-Erdene,  Shinetsog Geni  - Buu Ai - Sureg ost ( lyric video ).mp3",
+  "Relaxing Music Relieves stress, Anxiety and Depression 🌿Heals the Mind - Deep Sleep.mp3",
 ].map(encodeURI);
 
 self.addEventListener("install", (event) => {
