@@ -38,6 +38,12 @@ self.addEventListener("activate", (event) => {
 self.addEventListener("fetch", (event) => {
   if (event.request.method !== "GET") return;
   const url = new URL(event.request.url);
+  // Let the browser handle cross-origin requests directly instead of
+  // proxying them through the service worker. Proxying turns them into
+  // opaque responses, and opaque responses break Range-request
+  // streaming for large media — which is exactly how the GitHub
+  // Release-hosted lullaby track gets played/seeked.
+  if (url.origin !== self.location.origin) return;
   const isShell = event.request.mode === "navigate" || /\.(html|json|js)$/.test(url.pathname) || url.pathname.endsWith("/");
   if (isShell) {
     event.respondWith(
