@@ -1577,15 +1577,15 @@ function BigCard({ bg, label, sub, display, onClick }) {
         ...depthStyle(bg, 7),
       }}
     >
-      <div className="card-icon" style={{ fontSize: 38, fontWeight: 900, textShadow: "0 3px 0 rgba(0,0,0,0.18)" }}>{display}</div>
+      <div className="card-icon" style={{ fontSize: 46, fontWeight: 900, textShadow: "0 3px 0 rgba(0,0,0,0.18)" }}>{display}</div>
       {label && (
-        <div style={{ fontSize: 18, fontWeight: 800, marginTop: 6, lineHeight: 1.25, letterSpacing: 0.2, textShadow: "0 2px 0 rgba(0,0,0,0.15)" }}>
+        <div style={{ fontSize: 22, fontWeight: 800, marginTop: 6, lineHeight: 1.25, letterSpacing: 0.2, textShadow: "0 2px 0 rgba(0,0,0,0.15)" }}>
           {label}
         </div>
       )}
       <div
         style={{
-          fontSize: label ? 12.5 : 11,
+          fontSize: label ? 14 : 13,
           fontWeight: label ? 700 : 800,
           marginTop: label ? 0 : 8,
           marginBottom: label ? 0 : 10,
