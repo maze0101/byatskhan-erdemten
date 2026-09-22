@@ -419,6 +419,7 @@ function App() {
   const [sleepRemainingSec, setSleepRemainingSec] = useState(0);
   const [playProgress, setPlayProgress] = useState(0);
   const [bookOpen, setBookOpen] = useState(false);
+  const [justUpdated, setJustUpdated] = useState(false);
   const theme = getTheme(profile);
   const audioCtxRef = useRef(null);
   const lullabyTimeoutRef = useRef(null);
@@ -909,6 +910,20 @@ function App() {
     return () => window.removeEventListener("message", handleMessage);
   }, []);
 
+  // The page reloads itself right after a new service-worker version
+  // takes over (see the bottom of the file). It leaves a flag behind so
+  // this fresh load can show a "app updated" toast, then clears it.
+  useEffect(() => {
+    try {
+      if (sessionStorage.getItem("appJustUpdated") === "1") {
+        sessionStorage.removeItem("appJustUpdated");
+        setJustUpdated(true);
+        const t = setTimeout(() => setJustUpdated(false), 3500);
+        return () => clearTimeout(t);
+      }
+    } catch (e) {}
+  }, []);
+
   return (
     <div
       style={{
@@ -1031,6 +1046,10 @@ function App() {
         }
         .scrollarea::-webkit-scrollbar { width: 8px; }
         .scrollarea::-webkit-scrollbar-thumb { background: #B7DDF0; border-radius: 8px; }
+        @keyframes toastIn {
+          0% { opacity: 0; transform: translateX(-50%) translateY(14px) scale(0.9); }
+          100% { opacity: 1; transform: translateX(-50%) translateY(0) scale(1); }
+        }
       `}</style>
 
       {/* Day scene */}
@@ -1388,6 +1407,35 @@ function App() {
           >
             ✕
           </button>
+        </div>
+      )}
+
+      {/* "App updated" toast — shown once, right after the service
+          worker's auto-update reload brings in a fresh version. */}
+      {justUpdated && (
+        <div
+          style={{
+            position: "fixed",
+            left: "50%",
+            bottom: "max(18px, env(safe-area-inset-bottom))",
+            transform: "translateX(-50%)",
+            zIndex: 6000,
+            display: "flex",
+            alignItems: "center",
+            gap: 8,
+            padding: "12px 20px",
+            borderRadius: 999,
+            background: "#2F5D82",
+            color: "#FFFFFF",
+            fontWeight: 800,
+            fontSize: 14,
+            boxShadow: "0 8px 0 rgba(0,0,0,0.18), 0 14px 24px rgba(0,0,0,0.3)",
+            animation: "toastIn 0.35s cubic-bezier(0.34, 1.56, 0.64, 1)",
+            pointerEvents: "none",
+            whiteSpace: "nowrap",
+          }}
+        >
+          ✨ Апп шинэчлэгдлээ!
         </div>
       )}
     </div>
@@ -2931,6 +2979,11 @@ setTimeout(() => {
 </script>
 <script>
   if ("serviceWorker" in navigator) {
+    // Whether this page load was already controlled by a service worker.
+    // If so, a later controllerchange means a *new* version just took
+    // over — a real update, worth telling the user about. If not (first
+    // ever install), skip the toast — nothing was actually "updated".
+    const hadController = !!navigator.serviceWorker.controller;
     window.addEventListener("load", () => {
       navigator.serviceWorker.register("sw.js").then((reg) => {
         reg.update().catch(() => {});
@@ -2943,6 +2996,9 @@ setTimeout(() => {
     navigator.serviceWorker.addEventListener("controllerchange", () => {
       if (refreshedOnce) return;
       refreshedOnce = true;
+      if (hadController) {
+        try { sessionStorage.setItem("appJustUpdated", "1"); } catch (e) {}
+      }
       window.location.reload();
     });
   }
