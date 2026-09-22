@@ -872,12 +872,6 @@ function App() {
   }
 
   useEffect(() => {
-    if (screen !== "lullaby") {
-      stopLullaby();
-    }
-  }, [screen]);
-
-  useEffect(() => {
     if (!isPlayingLullaby || LULLABIES[activeLullaby].type !== "audio") {
       setPlayProgress(0);
       return;
