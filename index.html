@@ -1137,7 +1137,7 @@ function App() {
         )}
 
         {screen === "home" && (
-          <HomeScreen onPick={(s) => setScreen(s)} onLullaby={openLullaby} theme={theme} />
+          <HomeScreen onPick={(s) => setScreen(s)} onLullaby={openLullaby} onOpenBook={() => setBookOpen(true)} theme={theme} />
         )}
 
         {screen === "games" && (
@@ -1548,7 +1548,7 @@ function ProfileScreen({ current, onChoose, onCancel }) {
   );
 }
 
-function HomeScreen({ onPick, onLullaby, theme }) {
+function HomeScreen({ onPick, onLullaby, onOpenBook, theme }) {
   const [c0, c1, c2, c3] = theme.cardColors;
   return (
     <div>
@@ -1654,7 +1654,7 @@ function HomeScreen({ onPick, onLullaby, theme }) {
           label="Үлгэр"
           sub="13 ном"
           display="📖"
-          onClick={() => setBookOpen(true)}
+          onClick={onOpenBook}
         />
       </div>
     </div>
