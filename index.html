@@ -24,7 +24,7 @@
     position: fixed; inset: 0; z-index: 9999;
     display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 18px;
     background: linear-gradient(180deg, #6BAEE0 0%, #A8D4F0 45%, #FCEFC7 100%);
-    font-family: 'Baloo 2', 'Montserrat', sans-serif;
+    font-family: 'Montserrat', 'Baloo 2', sans-serif;
     transition: opacity 0.6s ease;
   }
   #splash.hide { opacity: 0; pointer-events: none; }
@@ -890,7 +890,7 @@ function App() {
     <div
       style={{
         minHeight: "100vh",
-        fontFamily: "'Baloo 2', 'Montserrat', sans-serif",
+        fontFamily: "'Montserrat', 'Baloo 2', sans-serif",
         background:
           screen === "lullaby"
             ? "linear-gradient(180deg, #171B36 0%, #2B2A5C 55%, #3C2F5E 100%)"
@@ -984,6 +984,27 @@ function App() {
           transform: translateY(5px) scale(0.97) !important;
           box-shadow: 0 0px 0 var(--shadow, rgba(0,0,0,0.15)), 0 2px 6px rgba(0,0,0,0.18) !important;
           filter: brightness(0.96);
+        }
+        .card-glow::before {
+          content: "";
+          position: absolute;
+          inset: -8px;
+          z-index: -1;
+          border-radius: inherit;
+          background: var(--glow, transparent);
+          filter: blur(18px);
+          opacity: 0;
+          transition: opacity 0.25s ease, transform 0.25s ease;
+          transform: scale(0.92);
+        }
+        .card-glow:hover::before { opacity: 0.65; transform: scale(1.04); }
+        .card-icon { display: inline-block; transition: transform 0.2s ease; }
+        .card-glow:hover .card-icon { animation: iconPop 0.5s cubic-bezier(0.34, 1.56, 0.64, 1); }
+        @keyframes iconPop {
+          0% { transform: scale(1) rotate(0deg); }
+          45% { transform: scale(1.18) rotate(-8deg); }
+          75% { transform: scale(0.96) rotate(4deg); }
+          100% { transform: scale(1) rotate(0deg); }
         }
         .scrollarea::-webkit-scrollbar { width: 8px; }
         .scrollarea::-webkit-scrollbar-thumb { background: #B7DDF0; border-radius: 8px; }
@@ -1539,11 +1560,11 @@ function HomeScreen({ onPick, onLullaby, theme }) {
 function BigCard({ bg, label, sub, display, onClick }) {
   return (
     <button
-      className="tile"
+      className="tile card-glow"
       onClick={onClick}
       style={{
         width: 170,
-        height: 190,
+        minHeight: 190,
         borderRadius: 26,
         color: "#FFFFFF",
         display: "flex",
@@ -1552,12 +1573,30 @@ function BigCard({ bg, label, sub, display, onClick }) {
         justifyContent: "center",
         cursor: "pointer",
         animation: "popIn 0.4s ease",
+        "--glow": bg,
         ...depthStyle(bg, 7),
       }}
     >
-      <div style={{ fontSize: 46, fontWeight: 900, textShadow: "0 3px 0 rgba(0,0,0,0.18)" }}>{display}</div>
-      <div style={{ fontSize: 22, fontWeight: 800, marginTop: 6, textShadow: "0 2px 0 rgba(0,0,0,0.15)" }}>{label}</div>
-      <div style={{ fontSize: 14, fontWeight: 700, opacity: 0.95 }}>{sub}</div>
+      <div className="card-icon" style={{ fontSize: 38, fontWeight: 900, textShadow: "0 3px 0 rgba(0,0,0,0.18)" }}>{display}</div>
+      {label && (
+        <div style={{ fontSize: 18, fontWeight: 800, marginTop: 6, lineHeight: 1.25, letterSpacing: 0.2, textShadow: "0 2px 0 rgba(0,0,0,0.15)" }}>
+          {label}
+        </div>
+      )}
+      <div
+        style={{
+          fontSize: label ? 12.5 : 11,
+          fontWeight: label ? 700 : 800,
+          marginTop: label ? 0 : 8,
+          marginBottom: label ? 0 : 10,
+          padding: "0 14px",
+          lineHeight: 1.35,
+          opacity: 0.95,
+          textShadow: label ? "none" : "0 2px 0 rgba(0,0,0,0.15)",
+        }}
+      >
+        {sub}
+      </div>
     </button>
   );
 }
@@ -1570,10 +1609,10 @@ function GamesHub({ onLetters, onNumbers, onMemory, onCounting, theme }) {
         Ямар тоглоом тоглох вэ? 🎮
       </div>
       <div style={{ display: "flex", flexWrap: "wrap", gap: 16, justifyContent: "center" }}>
-        <BigCard bg={c0} label="Үсэг таах" sub="Зөв үсгийг ол" display="🎯" onClick={onLetters} />
-        <BigCard bg={c1} label="Тоо таах" sub="Хонио тоол" display="🐑" onClick={onNumbers} />
-        <BigCard bg={c2} label="Санах тоглоом" sub="Хос ол" display="🧠" onClick={onMemory} />
-        <BigCard bg={c3} label="Дарж тоол" sub="Тоогоо олоорой" display="👆" onClick={onCounting} />
+        <BigCard bg={c0} label="Үсэг таацгаая" sub="Зөв үгсийг хамтдаа олцгооё" display="🎯" onClick={onLetters} />
+        <BigCard bg={c1} label="" sub={<><b style={{ fontWeight: 900 }}>ЭНДЭЭС ХЭДЭН ХУНДАН ЦАГААН</b> ХОНЬ ОЛЖ ЧАДАХ ВЭ?</>} display="🐑" onClick={onNumbers} />
+        <BigCard bg={c2} label="Хосыг ол" sub="Ижил дүрснүүдийг олоорой" display="🧠" onClick={onMemory} />
+        <BigCard bg={c3} label="" sub="Сонирхолтой тоонуудыг цээжилье" display="👆" onClick={onCounting} />
       </div>
     </div>
   );
@@ -2505,7 +2544,7 @@ function LullabyPage({ item, idx, playing, profile }) {
           top: "calc(max(14px, env(safe-area-inset-top)) + 26px)",
           margin: 0,
           textAlign: "center",
-          fontFamily: "'Baloo 2', sans-serif",
+          fontFamily: "'Montserrat', sans-serif",
           fontWeight: 800,
           fontSize: "clamp(22px, 6.6vw, 32px)",
           color: "#F3E9C7",
