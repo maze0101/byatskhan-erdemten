@@ -178,6 +178,522 @@ const MONGOLIAN_WORDS = [
   { word: "Ундаа", emoji: "🧃" },
 ];
 
+/* School lessons, grades 1-6. Each lesson has a short explanation,
+   a few examples, and a quiz ({ q, options, answer }). */
+const SUBJECT_STYLES = {
+  math: { emoji: "🔢", color: "#4A90D9" },
+  mongol: { emoji: "📝", color: "#E0664F" },
+  world: { emoji: "🌍", color: "#3EA56F" },
+  science: { emoji: "🔬", color: "#8E5CC4" },
+};
+
+const GRADES = [
+  {
+    grade: 1,
+    color: "#F5A623",
+    subjects: [
+      {
+        kind: "math",
+        name: "Математик",
+        lessons: [
+          {
+            title: "1-ээс 20 хүртэл тоолох",
+            text: "Тоонууд дараалан ирдэг. 10-ын дараа 11, 12, 13 гэж 20 хүртэл тоолно. Тоо бүр өмнөхөөсөө 1-ээр их.",
+            examples: ["10 → 11 → 12", "15-ын дараа 16", "19-ийн дараа 20"],
+            quiz: [
+              { q: "7-гийн дараа ямар тоо ирэх вэ?", options: ["6", "8", "9"], answer: "8" },
+              { q: "14-ийн өмнөх тоо аль нь вэ?", options: ["13", "15", "12"], answer: "13" },
+              { q: "Аль нь их вэ?", options: ["12", "18", "9"], answer: "18" },
+            ],
+          },
+          {
+            title: "10 хүртэл нэмэх, хасах",
+            text: "Нэмэхэд тоо ихэсдэг, хасахад багасдаг. 2 алим дээр 3 алим нэмбэл 5 алим болно.",
+            examples: ["🍎🍎 + 🍎🍎🍎 = 5", "3 + 4 = 7", "9 − 2 = 7"],
+            quiz: [
+              { q: "4 + 3 = ?", options: ["6", "7", "8"], answer: "7" },
+              { q: "8 − 5 = ?", options: ["2", "3", "4"], answer: "3" },
+              { q: "5 + 5 = ?", options: ["9", "10", "11"], answer: "10" },
+            ],
+          },
+        ],
+      },
+      {
+        kind: "mongol",
+        name: "Монгол хэл",
+        lessons: [
+          {
+            title: "Эгшиг ба гийгүүлэгч",
+            text: "Монгол цагаан толгой 35 үсэгтэй. Үүнээс 13 нь эгшиг, 20 нь гийгүүлэгч, 2 нь тэмдэг (ъ, ь).",
+            examples: ["Эгшиг: а, э, и, о, у, ө, ү ...", "Гийгүүлэгч: б, в, г, д, л, м, н ..."],
+            quiz: [
+              { q: "Аль нь эгшиг вэ?", options: ["б", "о", "м"], answer: "о" },
+              { q: "Цагаан толгой хэдэн үсэгтэй вэ?", options: ["26", "33", "35"], answer: "35" },
+              { q: "Аль нь гийгүүлэгч вэ?", options: ["ү", "н", "а"], answer: "н" },
+            ],
+          },
+          {
+            title: "Үе хуваах",
+            text: "Үг нь үеэс тогтдог. Үе бүрт нэг эгшиг байна. Алгаа ташиж үеэ тоолоорой!",
+            examples: ["ном (1 үе)", "ма-шин (2 үе)", "эр-вээ-хэй (3 үе)"],
+            quiz: [
+              { q: "«Нохой» хэдэн үетэй вэ?", options: ["1", "2", "3"], answer: "2" },
+              { q: "«Гэр» хэдэн үетэй вэ?", options: ["1", "2", "3"], answer: "1" },
+              { q: "«Эрвээхэй» хэдэн үетэй вэ?", options: ["1", "2", "3"], answer: "3" },
+            ],
+          },
+        ],
+      },
+      {
+        kind: "world",
+        name: "Хүн ба орчин",
+        lessons: [
+          {
+            title: "Жилийн 4 улирал",
+            text: "Жилд 4 улирал байдаг: хавар, зун, намар, өвөл. Улирал бүр өөрийн онцлогтой.",
+            examples: ["🌱 Хавар — цас хайлна", "☀️ Зун — дулаан, ногоон", "🍂 Намар — навч шарлана", "❄️ Өвөл — цас орно"],
+            quiz: [
+              { q: "Цас аль улиралд ордог вэ?", options: ["Зун", "Өвөл", "Хавар"], answer: "Өвөл" },
+              { q: "Навч шарлан унадаг улирал аль нь вэ?", options: ["Намар", "Зун", "Хавар"], answer: "Намар" },
+              { q: "Жилд хэдэн улирал байдаг вэ?", options: ["2", "4", "6"], answer: "4" },
+            ],
+          },
+          {
+            title: "Таван мэдрэхүй",
+            text: "Бид 5 мэдрэхүйтэй: харах, сонсох, үнэрлэх, амтлах, хүрэлцэх.",
+            examples: ["👀 Нүд — харна", "👂 Чих — сонсоно", "👃 Хамар — үнэрлэнэ", "👅 Хэл — амтална", "✋ Арьс — мэдэрнэ"],
+            quiz: [
+              { q: "Бид юугаараа сонсдог вэ?", options: ["Нүд", "Чих", "Гар"], answer: "Чих" },
+              { q: "Бид юугаараа үнэрлэдэг вэ?", options: ["Хамар", "Хөл", "Чих"], answer: "Хамар" },
+              { q: "Бид хэдэн мэдрэхүйтэй вэ?", options: ["3", "5", "7"], answer: "5" },
+            ],
+          },
+        ],
+      },
+    ],
+  },
+  {
+    grade: 2,
+    color: "#4A90D9",
+    subjects: [
+      {
+        kind: "math",
+        name: "Математик",
+        lessons: [
+          {
+            title: "100 хүртэлх тоо",
+            text: "Хоёр оронтой тоо нь аравт ба нэгжээс тогтоно. 47 гэдэг нь 4 аравт, 7 нэгж.",
+            examples: ["35 = 30 + 5", "62 = 6 аравт + 2 нэгж", "90 = 9 аравт"],
+            quiz: [
+              { q: "58-д хэдэн аравт байна вэ?", options: ["5", "8", "58"], answer: "5" },
+              { q: "40 + 3 = ?", options: ["34", "43", "7"], answer: "43" },
+              { q: "Аль нь хамгийн их вэ?", options: ["67", "76", "70"], answer: "76" },
+            ],
+          },
+          {
+            title: "Хоёр оронтой тоо нэмэх, хасах",
+            text: "Эхлээд нэгжийг нэгжтэй, дараа нь аравтыг аравттай нэмнэ эсвэл хасна.",
+            examples: ["23 + 14 = 37", "56 − 21 = 35", "40 + 30 = 70"],
+            quiz: [
+              { q: "32 + 25 = ?", options: ["57", "55", "67"], answer: "57" },
+              { q: "78 − 34 = ?", options: ["44", "42", "54"], answer: "44" },
+              { q: "50 + 50 = ?", options: ["100", "90", "55"], answer: "100" },
+            ],
+          },
+        ],
+      },
+      {
+        kind: "mongol",
+        name: "Монгол хэл",
+        lessons: [
+          {
+            title: "Эр, эм, саармаг эгшиг",
+            text: "Эр эгшиг: а, о, у. Эм эгшиг: э, ө, ү. Саармаг эгшиг: и. Нэг үгэнд эр, эм эгшиг холилдохгүй — үүнийг эгшиг зохицох ёс гэнэ.",
+            examples: ["Эр үг: малгай, морь", "Эм үг: ээж, өвөл, үнээ"],
+            quiz: [
+              { q: "Аль нь эр эгшиг вэ?", options: ["а", "э", "ү"], answer: "а" },
+              { q: "Аль нь эм эгшиг вэ?", options: ["о", "ө", "у"], answer: "ө" },
+              { q: "«и» ямар эгшиг вэ?", options: ["Эр", "Эм", "Саармаг"], answer: "Саармаг" },
+            ],
+          },
+          {
+            title: "Өгүүлбэр",
+            text: "Өгүүлбэр том үсгээр эхэлж, цэг, асуултын эсвэл анхаарлын тэмдгээр төгсдөг.",
+            examples: ["Бат ном уншив.", "Чи хаана явж байна?", "Ямар гоё юм бэ!"],
+            quiz: [
+              { q: "Өгүүлбэр юугаар эхэлдэг вэ?", options: ["Том үсгээр", "Жижиг үсгээр", "Тоогоор"], answer: "Том үсгээр" },
+              { q: "Асуусан өгүүлбэрийн төгсгөлд юу тавих вэ?", options: [".", "?", "!"], answer: "?" },
+              { q: "Аль нь зөв бичигдсэн бэ?", options: ["ээж хоол хийв", "Ээж хоол хийв.", "Ээж хоол хийв"], answer: "Ээж хоол хийв." },
+            ],
+          },
+        ],
+      },
+      {
+        kind: "world",
+        name: "Хүн ба орчин",
+        lessons: [
+          {
+            title: "Ургамлын хэсгүүд",
+            text: "Ургамал үндэс, иш, навч, цэцэгтэй. Ургахад ус, нарны гэрэл, агаар хэрэгтэй.",
+            examples: ["🌱 Үндэс — ус шимж авна", "🌿 Иш — ургамлыг тулна", "🍃 Навч — нарны гэрэл авна", "🌸 Цэцэг — үр гаргана"],
+            quiz: [
+              { q: "Ургамал усаа юугаараа шимж авдаг вэ?", options: ["Үндэс", "Навч", "Цэцэг"], answer: "Үндэс" },
+              { q: "Ургамалд юу хэрэгтэй вэ?", options: ["Ус ба гэрэл", "Зөвхөн чулуу", "Харанхуй"], answer: "Ус ба гэрэл" },
+              { q: "Үр аль хэсгээс гардаг вэ?", options: ["Цэцэг", "Иш", "Үндэс"], answer: "Цэцэг" },
+            ],
+          },
+          {
+            title: "Таван хошуу мал",
+            text: "Монголчууд таван хошуу мал малладаг: адуу, үхэр, тэмээ, хонь, ямаа.",
+            examples: ["🐴 Адуу", "🐄 Үхэр", "🐫 Тэмээ", "🐑 Хонь", "🐐 Ямаа"],
+            quiz: [
+              { q: "Аль нь таван хошуу малд ордог вэ?", options: ["Тэмээ", "Арслан", "Бар"], answer: "Тэмээ" },
+              { q: "Ноолуур аль малаас гардаг вэ?", options: ["Ямаа", "Адуу", "Үхэр"], answer: "Ямаа" },
+              { q: "Таван хошуу мал хэдэн төрөл вэ?", options: ["3", "5", "10"], answer: "5" },
+            ],
+          },
+        ],
+      },
+    ],
+  },
+  {
+    grade: 3,
+    color: "#3EA56F",
+    subjects: [
+      {
+        kind: "math",
+        name: "Математик",
+        lessons: [
+          {
+            title: "Үржүүлэх",
+            text: "Үржүүлэх гэдэг нь ижил тоог олон удаа нэмэх юм. 3 × 4 = 3 + 3 + 3 + 3 = 12.",
+            examples: ["2 × 5 = 10", "4 × 3 = 12", "6 × 6 = 36"],
+            quiz: [
+              { q: "7 × 8 = ?", options: ["54", "56", "63"], answer: "56" },
+              { q: "5 × 9 = ?", options: ["45", "40", "54"], answer: "45" },
+              { q: "3 × 7 = ?", options: ["21", "24", "18"], answer: "21" },
+            ],
+          },
+          {
+            title: "Хуваах",
+            text: "Хуваах нь тэнцүү хэсэгт хуваарилах явдал. 12 чихрийг 3 хүүхдэд тэнцүү хуваавал хүн бүр 4-ийг авна.",
+            examples: ["12 ÷ 3 = 4", "20 ÷ 5 = 4", "18 ÷ 2 = 9"],
+            quiz: [
+              { q: "24 ÷ 6 = ?", options: ["4", "6", "3"], answer: "4" },
+              { q: "35 ÷ 7 = ?", options: ["5", "7", "6"], answer: "5" },
+              { q: "16 алимыг 4 хүүхдэд тэнцүү хуваавал хүн бүр хэдийг авах вэ?", options: ["3", "4", "12"], answer: "4" },
+            ],
+          },
+        ],
+      },
+      {
+        kind: "mongol",
+        name: "Монгол хэл",
+        lessons: [
+          {
+            title: "Нэр үг",
+            text: "Хүн, амьтан, юмсын нэрийг заасан үгийг нэр үг гэнэ. «Хэн? Юу?» гэсэн асуултад хариулна.",
+            examples: ["Хэн? — багш, Болд", "Юу? — ном, гэр, мод"],
+            quiz: [
+              { q: "Аль нь нэр үг вэ?", options: ["гүйх", "ширээ", "улаан"], answer: "ширээ" },
+              { q: "Нэр үг ямар асуултад хариулдаг вэ?", options: ["Хэн? Юу?", "Юу хийв?", "Ямар?"], answer: "Хэн? Юу?" },
+              { q: "Аль нь нэр үг биш вэ?", options: ["нохой", "унших", "Улаанбаатар"], answer: "унших" },
+            ],
+          },
+          {
+            title: "Үйл үг",
+            text: "Үйл хөдлөлийг заасан үгийг үйл үг гэнэ. «Юу хийв? Яав?» гэсэн асуултад хариулна.",
+            examples: ["гүйх, унших, бичих", "Хүүхэд бөмбөг тоглов."],
+            quiz: [
+              { q: "Аль нь үйл үг вэ?", options: ["зурах", "зураг", "өнгө"], answer: "зурах" },
+              { q: "«Туяа дуу дуулав.» — үйл үг аль нь вэ?", options: ["Туяа", "дуу", "дуулав"], answer: "дуулав" },
+              { q: "Үйл үг ямар асуултад хариулдаг вэ?", options: ["Юу хийв?", "Хэн?", "Хэд?"], answer: "Юу хийв?" },
+            ],
+          },
+        ],
+      },
+      {
+        kind: "world",
+        name: "Хүн ба байгаль",
+        lessons: [
+          {
+            title: "Усны гурван төлөв",
+            text: "Ус хатуу (мөс), шингэн (ус), хий (уур) гэсэн 3 төлөвтэй. 0°C-д хөлдөж, 100°C-д буцалдаг.",
+            examples: ["🧊 Мөс — хатуу", "💧 Ус — шингэн", "♨️ Уур — хий"],
+            quiz: [
+              { q: "Мөс ямар төлөвтэй вэ?", options: ["Хатуу", "Шингэн", "Хий"], answer: "Хатуу" },
+              { q: "Ус хэдэн хэмд буцалдаг вэ?", options: ["0°C", "50°C", "100°C"], answer: "100°C" },
+              { q: "Ус хөлдөхөд юу болох вэ?", options: ["Мөс", "Уур", "Үүл"], answer: "Мөс" },
+            ],
+          },
+          {
+            title: "Хүний биеийн эрхтэн",
+            text: "Зүрх цусыг бүх биед шахаж хүргэдэг. Уушгиар бид амьсгалдаг. Тархи бүх биеийг удирддаг.",
+            examples: ["❤️ Зүрх — цус шахна", "🫁 Уушги — амьсгална", "🧠 Тархи — бодно, удирдана"],
+            quiz: [
+              { q: "Цусыг юу шахдаг вэ?", options: ["Зүрх", "Уушги", "Ходоод"], answer: "Зүрх" },
+              { q: "Бид юугаараа амьсгалдаг вэ?", options: ["Уушги", "Зүрх", "Элэг"], answer: "Уушги" },
+              { q: "Биеийг удирддаг эрхтэн аль нь вэ?", options: ["Тархи", "Гэдэс", "Бөөр"], answer: "Тархи" },
+            ],
+          },
+        ],
+      },
+    ],
+  },
+  {
+    grade: 4,
+    color: "#E0664F",
+    subjects: [
+      {
+        kind: "math",
+        name: "Математик",
+        lessons: [
+          {
+            title: "Энгийн бутархай",
+            text: "Бүхэл зүйлийг тэнцүү хэсэгт хуваахад бутархай гарна. 1/2 — хагас, 1/4 — дөрөвний нэг.",
+            examples: ["🍕 Пиццаг 4 хувааж 1-ийг нь идвэл 1/4", "1/2 = 2/4", "3/4 > 1/4"],
+            quiz: [
+              { q: "«Хагас» гэдэг аль нь вэ?", options: ["1/2", "1/3", "2/1"], answer: "1/2" },
+              { q: "Аль нь хамгийн их вэ?", options: ["1/4", "3/4", "2/4"], answer: "3/4" },
+              { q: "8-ын 1/2 нь хэд вэ?", options: ["2", "4", "6"], answer: "4" },
+            ],
+          },
+          {
+            title: "Периметр",
+            text: "Дүрсийн бүх талын уртын нийлбэрийг периметр гэнэ. Тэгш өнцөгтийн периметр: P = 2 × (a + b).",
+            examples: ["5 см талтай квадрат: P = 4 × 5 = 20 см", "3 см, 6 см талтай тэгш өнцөгт: P = 2 × (3 + 6) = 18 см"],
+            quiz: [
+              { q: "4 см талтай квадратын периметр хэд вэ?", options: ["16 см", "8 см", "12 см"], answer: "16 см" },
+              { q: "2 см, 5 см талтай тэгш өнцөгтийн периметр?", options: ["14 см", "10 см", "7 см"], answer: "14 см" },
+              { q: "Гурвалжны талууд 3, 4, 5 см. Периметр нь?", options: ["12 см", "60 см", "9 см"], answer: "12 см" },
+            ],
+          },
+        ],
+      },
+      {
+        kind: "mongol",
+        name: "Монгол хэл",
+        lessons: [
+          {
+            title: "Тэмдэг нэр",
+            text: "Юмсын өнгө, хэлбэр, чанарыг заасан үгийг тэмдэг нэр гэнэ. «Ямар?» гэсэн асуултад хариулна.",
+            examples: ["улаан алим", "том гэр", "хөөрхөн муур"],
+            quiz: [
+              { q: "Аль нь тэмдэг нэр вэ?", options: ["ногоон", "мод", "ургах"], answer: "ногоон" },
+              { q: "«Өндөр уул» — тэмдэг нэр аль нь вэ?", options: ["Өндөр", "Уул", "Аль нь ч биш"], answer: "Өндөр" },
+              { q: "Тэмдэг нэр ямар асуултад хариулдаг вэ?", options: ["Ямар?", "Хэн?", "Юу хийв?"], answer: "Ямар?" },
+            ],
+          },
+          {
+            title: "Цэг тэмдэг",
+            text: "Таслал (,) — жагсаасан үгсийг тусгаарлана. Асуултын тэмдэг (?) — асуусан өгүүлбэрт. Анхаарлын тэмдэг (!) — дуудах, баярлах үед.",
+            examples: ["Би алим, лийр, гадил идсэн.", "Чи хэдэн настай вэ?", "Хөөх, ямар гоё вэ!"],
+            quiz: [
+              { q: "Жагсаасан үгсийн хооронд юу тавих вэ?", options: [",", "?", "!"], answer: "," },
+              { q: "«Чи хаана амьдардаг вэ_» — юу тавих вэ?", options: [".", "?", ","], answer: "?" },
+              { q: "«Урагшаа_» гэж дуудахад юу тавих вэ?", options: ["!", "?", ","], answer: "!" },
+            ],
+          },
+        ],
+      },
+      {
+        kind: "world",
+        name: "Хүн ба байгаль",
+        lessons: [
+          {
+            title: "Нарны аймаг",
+            text: "Нарны аймагт 8 гариг бий. Дэлхий нарнаас 3 дахь гариг. Хамгийн том гариг нь Бархасбадь.",
+            examples: ["☀️ Нар — од", "🌍 Дэлхий — 3 дахь гариг", "🪐 Санчир — цагирагтай", "🌙 Сар — Дэлхийн дагуул"],
+            quiz: [
+              { q: "Нарны аймагт хэдэн гариг бий вэ?", options: ["7", "8", "9"], answer: "8" },
+              { q: "Хамгийн том гариг аль нь вэ?", options: ["Бархасбадь", "Дэлхий", "Ангараг"], answer: "Бархасбадь" },
+              { q: "Сар бол юу вэ?", options: ["Дэлхийн дагуул", "Од", "Гариг"], answer: "Дэлхийн дагуул" },
+            ],
+          },
+          {
+            title: "Монгол орны байгаль",
+            text: "Монгол Улс 21 аймагтай, нийслэл нь Улаанбаатар. Хамгийн өндөр оргил — Хүйтэн оргил (4374 м), хамгийн том нуур — Увс нуур.",
+            examples: ["🏔️ Хүйтэн оргил — 4374 м", "🌊 Увс нуур — хамгийн том нуур", "💧 Хөвсгөл нуур — цэнгэг, гүн нуур", "🏜️ Говь — өмнөд хэсэгт"],
+            quiz: [
+              { q: "Монгол Улсын нийслэл аль вэ?", options: ["Улаанбаатар", "Дархан", "Эрдэнэт"], answer: "Улаанбаатар" },
+              { q: "Монгол Улс хэдэн аймагтай вэ?", options: ["18", "21", "25"], answer: "21" },
+              { q: "Монголын хамгийн өндөр оргил?", options: ["Хүйтэн оргил", "Отгонтэнгэр", "Богд хан"], answer: "Хүйтэн оргил" },
+            ],
+          },
+        ],
+      },
+    ],
+  },
+  {
+    grade: 5,
+    color: "#8E5CC4",
+    subjects: [
+      {
+        kind: "math",
+        name: "Математик",
+        lessons: [
+          {
+            title: "Аравтын бутархай",
+            text: "Аравтын бутархайг таслалаар бичнэ: 0,5 = 5/10 = хагас. Таслалын дараах эхний орон нь аравны хэсэг.",
+            examples: ["0,5 = 1/2", "0,25 = 1/4", "1,2 + 0,3 = 1,5"],
+            quiz: [
+              { q: "0,5 аль бутархайтай тэнцүү вэ?", options: ["1/2", "1/5", "5/1"], answer: "1/2" },
+              { q: "2,4 + 1,5 = ?", options: ["3,9", "3,5", "4,9"], answer: "3,9" },
+              { q: "Аль нь хамгийн их вэ?", options: ["0,7", "0,65", "0,5"], answer: "0,7" },
+            ],
+          },
+          {
+            title: "Талбай",
+            text: "Тэгш өнцөгтийн талбай = урт × өргөн. Квадратын талбай = тал × тал. Нэгж нь см².",
+            examples: ["5 см × 3 см = 15 см²", "4 см талтай квадрат: 4 × 4 = 16 см²"],
+            quiz: [
+              { q: "6 см, 4 см талтай тэгш өнцөгтийн талбай?", options: ["24 см²", "20 см²", "10 см²"], answer: "24 см²" },
+              { q: "7 см талтай квадратын талбай?", options: ["49 см²", "28 см²", "14 см²"], answer: "49 см²" },
+              { q: "Талбайн нэгж аль нь вэ?", options: ["см²", "см", "кг"], answer: "см²" },
+            ],
+          },
+        ],
+      },
+      {
+        kind: "mongol",
+        name: "Монгол хэл",
+        lessons: [
+          {
+            title: "Эзэн ба өгүүлэхүүн",
+            text: "Эзэн — үйлийг хийгч, «Хэн? Юу?» гэсэн асуултад хариулна. Өгүүлэхүүн — эзний үйл, «Юу хийв? Яав?» гэсэн асуултад хариулна.",
+            examples: ["Бат гүйв. → Бат — эзэн, гүйв — өгүүлэхүүн", "Нар мандав. → Нар — эзэн, мандав — өгүүлэхүүн"],
+            quiz: [
+              { q: "«Сараа зураг зурав.» — эзэн нь аль вэ?", options: ["Сараа", "зураг", "зурав"], answer: "Сараа" },
+              { q: "«Бороо орж байна.» — өгүүлэхүүн нь?", options: ["Бороо", "орж байна", "Аль нь ч биш"], answer: "орж байна" },
+              { q: "Эзэн ямар асуултад хариулдаг вэ?", options: ["Хэн? Юу?", "Яав?", "Хаана?"], answer: "Хэн? Юу?" },
+            ],
+          },
+          {
+            title: "Ижил ба эсрэг утгатай үг",
+            text: "Ижил утгатай үг нь өөр өөр бичигдэх ч утга нь адил. Эсрэг утгатай үг нь утгаараа эсрэгцдэг.",
+            examples: ["Ижил: хурдан — түргэн, гоё — сайхан", "Эсрэг: халуун — хүйтэн, өдөр — шөнө"],
+            quiz: [
+              { q: "«Хурдан» гэдэгтэй ижил утгатай үг?", options: ["Түргэн", "Удаан", "Том"], answer: "Түргэн" },
+              { q: "«Халуун» гэдэг үгийн эсрэг утгатай үг?", options: ["Хүйтэн", "Дулаан", "Гал"], answer: "Хүйтэн" },
+              { q: "«Өдөр» гэдэг үгийн эсрэг утгатай үг?", options: ["Шөнө", "Өглөө", "Нар"], answer: "Шөнө" },
+            ],
+          },
+        ],
+      },
+      {
+        kind: "world",
+        name: "Хүн ба нийгэм",
+        lessons: [
+          {
+            title: "Их Монгол Улс",
+            text: "1206 онд Тэмүжин Монгол аймгуудыг нэгтгэж Их Монгол Улсыг байгуулж, Чингис хаан хэмээн өргөмжлөгдсөн.",
+            examples: ["📜 1206 он — Их Монгол Улс байгуулагдсан", "🐎 Тэмүжин — Чингис хаан", "🏯 Хархорум — эзэнт гүрний нийслэл"],
+            quiz: [
+              { q: "Их Монгол Улс хэдэн онд байгуулагдсан бэ?", options: ["1206", "1921", "1990"], answer: "1206" },
+              { q: "Чингис хааны бага нэр юу вэ?", options: ["Тэмүжин", "Хубилай", "Өгөдэй"], answer: "Тэмүжин" },
+              { q: "Монголын эзэнт гүрний нийслэл байсан хот?", options: ["Хархорум", "Дархан", "Чойр"], answer: "Хархорум" },
+            ],
+          },
+          {
+            title: "Хүүхдийн эрх",
+            text: "Хүүхэд бүр сурах, эрүүл байх, тоглох, хамгаалуулах эрхтэй. 6-р сарын 1 бол Хүүхдийн баяр.",
+            examples: ["📚 Сурах эрх", "🏥 Эрүүл байх эрх", "⚽ Тоглох, амрах эрх", "🛡️ Хамгаалуулах эрх"],
+            quiz: [
+              { q: "Хүүхдийн баяр хэзээ вэ?", options: ["6-р сарын 1", "3-р сарын 8", "12-р сарын 31"], answer: "6-р сарын 1" },
+              { q: "Аль нь хүүхдийн эрх вэ?", options: ["Сурах", "Машин жолоодох", "Сонгуульд санал өгөх"], answer: "Сурах" },
+              { q: "Хэн нэгэн чамайг гомдоовол яах вэ?", options: ["Эцэг эх, багшдаа хэлнэ", "Хэнд ч хэлэхгүй", "Нууна"], answer: "Эцэг эх, багшдаа хэлнэ" },
+            ],
+          },
+        ],
+      },
+    ],
+  },
+  {
+    grade: 6,
+    color: "#2FB6A3",
+    subjects: [
+      {
+        kind: "math",
+        name: "Математик",
+        lessons: [
+          {
+            title: "Сөрөг тоо",
+            text: "0-ээс бага тоог сөрөг тоо гэж нэрлээд «−» тэмдэгтэй бичнэ. Жишээ нь өвлийн хүйтэн −20°C.",
+            examples: ["−5 < 0 < 5", "−3 + 5 = 2", "2 − 7 = −5"],
+            quiz: [
+              { q: "Аль нь хамгийн бага вэ?", options: ["−8", "−2", "0"], answer: "−8" },
+              { q: "−4 + 6 = ?", options: ["2", "−2", "10"], answer: "2" },
+              { q: "3 − 9 = ?", options: ["−6", "6", "−12"], answer: "−6" },
+            ],
+          },
+          {
+            title: "Хувь (%)",
+            text: "Хувь нь 100 хэсгийн хэд нь болохыг заана. 50% — хагас, 25% — дөрөвний нэг, 10% — аравны нэг.",
+            examples: ["200-ийн 50% = 100", "80-ийн 25% = 20", "10% = 1/10"],
+            quiz: [
+              { q: "100-ийн 30% хэд вэ?", options: ["30", "3", "70"], answer: "30" },
+              { q: "60-ийн 50% хэд вэ?", options: ["30", "20", "6"], answer: "30" },
+              { q: "40-ийн 10% хэд вэ?", options: ["4", "10", "40"], answer: "4" },
+            ],
+          },
+        ],
+      },
+      {
+        kind: "mongol",
+        name: "Монгол хэл",
+        lessons: [
+          {
+            title: "Үндэс ба дагавар",
+            text: "Үг нь үндэс ба дагавараас тогтоно. Үндэс нь үгийн гол утгыг, дагавар нь шинэ утгыг нэмнэ.",
+            examples: ["мал + чин → малчин", "зохиол + ч → зохиолч", "зур + аг → зураг"],
+            quiz: [
+              { q: "«Малчин» үгийн үндэс аль вэ?", options: ["мал", "чин", "малч"], answer: "мал" },
+              { q: "«Сургууль» үгийн үндэс аль вэ?", options: ["сур", "сургу", "уль"], answer: "сур" },
+              { q: "«Зохиолч» үгийн дагавар аль вэ?", options: ["ч", "зохиол", "ол"], answer: "ч" },
+            ],
+          },
+          {
+            title: "Том үсгээр бичих",
+            text: "Хүний нэр, газар усны нэр, улс орны нэрийг том үсгээр эхэлж бичнэ.",
+            examples: ["Болд, Сараа", "Улаанбаатар, Хөвсгөл нуур", "Монгол Улс, Япон"],
+            quiz: [
+              { q: "Аль нь зөв бичигдсэн бэ?", options: ["улаанбаатар", "Улаанбаатар", "УлаанБаатар"], answer: "Улаанбаатар" },
+              { q: "Аль үгийг том үсгээр эхэлж бичих вэ?", options: ["Туул (гол)", "мод", "ном"], answer: "Туул (гол)" },
+              { q: "Зөв бичигдсэнийг ол:", options: ["Сэлэнгэ мөрөн", "сэлэнгэ Мөрөн", "сэлэнгэ мөрөн"], answer: "Сэлэнгэ мөрөн" },
+            ],
+          },
+        ],
+      },
+      {
+        kind: "science",
+        name: "Байгалийн ухаан",
+        lessons: [
+          {
+            title: "Эс",
+            text: "Бүх амьд биес эсээс тогтоно. Эс маш жижиг тул микроскопоор хардаг. Эс нь бүрхүүл, цитоплазм, цөмтэй.",
+            examples: ["🔬 Микроскоп — эсийг харна", "🟢 Цөм — эсийг удирдана", "🧱 Бүрхүүл — эсийг хамгаална"],
+            quiz: [
+              { q: "Амьд биес юунаас тогтдог вэ?", options: ["Эс", "Чулуу", "Ус"], answer: "Эс" },
+              { q: "Эсийг юугаар хардаг вэ?", options: ["Микроскоп", "Дуран", "Толь"], answer: "Микроскоп" },
+              { q: "Эсийг удирддаг хэсэг аль вэ?", options: ["Цөм", "Бүрхүүл", "Цитоплазм"], answer: "Цөм" },
+            ],
+          },
+          {
+            title: "Фотосинтез",
+            text: "Ногоон ургамал нарны гэрэл, ус, нүүрсхүчлийн хий ашиглан өөртөө тэжээл (сахар) үүсгэж, хүчилтөрөгч ялгаруулдаг.",
+            examples: ["☀️ + 💧 + CO₂ → 🍬 + O₂", "🍃 Навчны хлорофилл — ногоон өнгөтэй бодис"],
+            quiz: [
+              { q: "Фотосинтезэд юу хэрэгтэй вэ?", options: ["Нарны гэрэл", "Харанхуй", "Цас"], answer: "Нарны гэрэл" },
+              { q: "Ургамал ямар хий ялгаруулдаг вэ?", options: ["Хүчилтөрөгч", "Нүүрсхүчлийн хий", "Азот"], answer: "Хүчилтөрөгч" },
+              { q: "Навчийг ногоон болгодог бодис?", options: ["Хлорофилл", "Давс", "Элсэн чихэр"], answer: "Хлорофилл" },
+            ],
+          },
+        ],
+      },
+    ],
+  },
+];
+
 /* (theme-specific tile colors defined per profile below) */
 
 const KNOWN_WORDS = ALPHABET.filter((a) => a.word).reduce((map, a) => {
@@ -384,7 +900,7 @@ function Mascot({ bounce, emoji, hopAnim, idleAnim }) {
 function App() {
   const [screen, setScreen] = useState(() => {
     try { return localStorage.getItem("profile") ? "home" : "profile"; } catch (e) { return "profile"; }
-  }); // profile | home | letters | numbers | animals | english | colors | mongolian-words | words | games | game-letters | game-numbers | game-memory | game-counting | lullaby
+  }); // profile | home | letters | numbers | animals | english | colors | mongolian-words | words | games | game-letters | game-numbers | game-memory | game-counting | lullaby | lessons | lesson-grade | lesson
   const [profile, setProfile] = useState(() => {
     try { return localStorage.getItem("profile") || null; } catch (e) { return null; }
   }); // 'boy' | 'girl' | null
@@ -419,6 +935,8 @@ function App() {
   const [sleepRemainingSec, setSleepRemainingSec] = useState(0);
   const [playProgress, setPlayProgress] = useState(0);
   const [bookOpen, setBookOpen] = useState(false);
+  const [lessonGrade, setLessonGrade] = useState(null); // 1-6
+  const [activeLesson, setActiveLesson] = useState(null); // { subjectIdx, lessonIdx }
   const [justUpdated, setJustUpdated] = useState(false);
   const theme = getTheme(profile);
   const audioCtxRef = useRef(null);
@@ -859,6 +1377,18 @@ function App() {
     setCaption(`${item.label} эгшиглэж байна... 💤`);
   }
 
+  function openGrade(grade) {
+    setLessonGrade(grade);
+    setScreen("lesson-grade");
+    setCaption(`${grade}-р ангийн хичээл 📚`);
+  }
+
+  function openLesson(subjectIdx, lessonIdx) {
+    setActiveLesson({ subjectIdx, lessonIdx });
+    setScreen("lesson");
+    setCaption("Анхааралтай уншаарай 🤓");
+  }
+
   function openLullaby() {
     setScreen("lullaby");
     setCaption("Тайван нойрсоорой... 💤");
@@ -1141,6 +1671,28 @@ function App() {
             onMemory={startMemoryGame}
             onCounting={startCountingGame}
             theme={theme}
+          />
+        )}
+
+        {screen === "lessons" && <GradesScreen onOpen={openGrade} />}
+
+        {screen === "lesson-grade" && lessonGrade && (
+          <GradeScreen
+            grade={GRADES.find((g) => g.grade === lessonGrade)}
+            onOpen={openLesson}
+            onBack={() => setScreen("lessons")}
+          />
+        )}
+
+        {screen === "lesson" && lessonGrade && activeLesson && (
+          <LessonScreen
+            key={`${lessonGrade}-${activeLesson.subjectIdx}-${activeLesson.lessonIdx}`}
+            grade={GRADES.find((g) => g.grade === lessonGrade)}
+            subjectIdx={activeLesson.subjectIdx}
+            lessonIdx={activeLesson.lessonIdx}
+            accent={theme.accent}
+            onCaption={(text) => { setCaption(text); bumpMascot(); }}
+            onBack={() => setScreen("lesson-grade")}
           />
         )}
 
@@ -1609,6 +2161,13 @@ function HomeScreen({ onPick, onLullaby, onOpenBook, theme }) {
           onClick={() => onPick("games")}
         />
         <BigCard
+          bg="#E0664F"
+          label="Хичээл"
+          sub="1-6-р анги"
+          display="🎓"
+          onClick={() => onPick("lessons")}
+        />
+        <BigCard
           bg="#6C6FBF"
           label="Унтлагын ая"
           sub="Тайван ая"
@@ -1712,6 +2271,251 @@ function GamesHub({ onLetters, onNumbers, onMemory, onCounting, theme }) {
         <BigCard bg={c2} label="Хосыг ол" sub="Ижил дүрснүүдийг олоорой" display="🧠" onClick={onMemory} />
         <BigCard bg={c3} label="" sub="Сонирхолтой тоонуудыг цээжилье" display="👆" onClick={onCounting} />
       </div>
+    </div>
+  );
+}
+
+function BackButton({ label, onClick }) {
+  return (
+    <button
+      onClick={onClick}
+      className="btn3d"
+      style={{
+        borderRadius: 14,
+        padding: "8px 14px",
+        fontWeight: 800,
+        fontSize: 15,
+        color: "#3A2E22",
+        cursor: "pointer",
+        marginBottom: 16,
+        ...depthStyle("#FFFFFF", 4),
+      }}
+    >
+      ← {label}
+    </button>
+  );
+}
+
+function GradesScreen({ onOpen }) {
+  return (
+    <div>
+      <div style={{ fontSize: 17, fontWeight: 700, color: "#3A6B8A", marginBottom: 20, textAlign: "center" }}>
+        Хэддүгээр ангид сурдаг вэ? 🎒
+      </div>
+      <div style={{ display: "flex", flexWrap: "wrap", gap: 16, justifyContent: "center" }}>
+        {GRADES.map((g) => (
+          <BigCard
+            key={g.grade}
+            bg={g.color}
+            label={`${g.grade}-р анги`}
+            sub={g.subjects.map((s) => s.name).join(" · ")}
+            display={g.grade}
+            onClick={() => onOpen(g.grade)}
+          />
+        ))}
+      </div>
+    </div>
+  );
+}
+
+function GradeScreen({ grade, onOpen, onBack }) {
+  return (
+    <div style={{ maxWidth: 640, margin: "0 auto" }}>
+      <BackButton label="Ангиуд" onClick={onBack} />
+      <div style={{ fontSize: 24, fontWeight: 900, color: "#3A2E22", marginBottom: 16 }}>
+        {grade.grade}-р анги
+      </div>
+      {grade.subjects.map((subject, si) => {
+        const style = SUBJECT_STYLES[subject.kind];
+        return (
+          <div key={subject.name} style={{ marginBottom: 22 }}>
+            <div style={{ fontSize: 19, fontWeight: 800, color: style.color, marginBottom: 10 }}>
+              {style.emoji} {subject.name}
+            </div>
+            <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(220px, 1fr))", gap: 12 }}>
+              {subject.lessons.map((lesson, li) => (
+                <button
+                  key={lesson.title}
+                  className="tile"
+                  onClick={() => onOpen(si, li)}
+                  style={{
+                    borderRadius: 18,
+                    padding: "16px 14px",
+                    color: "#FFFFFF",
+                    fontSize: 17,
+                    fontWeight: 800,
+                    textAlign: "left",
+                    cursor: "pointer",
+                    textShadow: "0 2px 0 rgba(0,0,0,0.15)",
+                    animation: `popIn 0.3s ease ${(si * 2 + li) * 0.05}s both`,
+                    ...depthStyle(style.color, 5),
+                  }}
+                >
+                  <div style={{ fontSize: 13, fontWeight: 600, opacity: 0.9 }}>{li + 1}-р хичээл</div>
+                  {lesson.title}
+                </button>
+              ))}
+            </div>
+          </div>
+        );
+      })}
+    </div>
+  );
+}
+
+function LessonScreen({ grade, subjectIdx, lessonIdx, accent, onCaption, onBack }) {
+  const subject = grade.subjects[subjectIdx];
+  const lesson = subject.lessons[lessonIdx];
+  const style = SUBJECT_STYLES[subject.kind];
+  const [quiz] = useState(() => lesson.quiz.map((item) => ({ ...item, options: shuffle(item.options) })));
+  const [phase, setPhase] = useState("learn"); // learn | quiz | done
+  const [qIndex, setQIndex] = useState(0);
+  const [picked, setPicked] = useState(null);
+  const [wrong, setWrong] = useState(null);
+  const [missed, setMissed] = useState(false);
+  const [correctCount, setCorrectCount] = useState(0);
+
+  const card = {
+    background: "#FFFFFF",
+    borderRadius: 22,
+    padding: "20px 18px",
+    boxShadow: "0 6px 0 rgba(0,0,0,0.08), 0 10px 20px rgba(0,0,0,0.08)",
+    marginBottom: 16,
+  };
+
+  function answer(option) {
+    if (picked) return;
+    const current = quiz[qIndex];
+    if (option === current.answer) {
+      setPicked(option);
+      if (!missed) setCorrectCount((c) => c + 1);
+      onCaption("Зөв байна! 🎉");
+      setTimeout(() => {
+        setPicked(null);
+        setMissed(false);
+        setWrong(null);
+        if (qIndex + 1 < quiz.length) {
+          setQIndex(qIndex + 1);
+        } else {
+          setPhase("done");
+          onCaption("Хичээлээ дуусгалаа! 🏆");
+        }
+      }, 800);
+    } else {
+      setWrong(option);
+      setMissed(true);
+      onCaption("Дахиад оролдоорой 💪");
+      setTimeout(() => setWrong(null), 400);
+    }
+  }
+
+  function restart() {
+    setPhase("learn");
+    setQIndex(0);
+    setCorrectCount(0);
+    setMissed(false);
+  }
+
+  return (
+    <div style={{ maxWidth: 560, margin: "0 auto" }}>
+      <BackButton label={`${grade.grade}-р анги`} onClick={onBack} />
+      <div style={{ fontSize: 14, fontWeight: 800, color: style.color }}>
+        {style.emoji} {subject.name} · {lessonIdx + 1}-р хичээл
+      </div>
+      <div style={{ fontSize: 26, fontWeight: 900, color: "#3A2E22", margin: "4px 0 16px" }}>{lesson.title}</div>
+
+      {phase === "learn" && (
+        <>
+          <div style={{ ...card, fontSize: 18, fontWeight: 600, lineHeight: 1.5, color: "#3A2E22", animation: "popIn 0.3s ease" }}>
+            {lesson.text}
+          </div>
+          <div style={{ ...card, borderLeft: `6px solid ${style.color}` }}>
+            <div style={{ fontSize: 15, fontWeight: 800, color: style.color, marginBottom: 8 }}>Жишээ</div>
+            {lesson.examples.map((ex) => (
+              <div key={ex} style={{ fontSize: 18, fontWeight: 700, color: "#3A2E22", padding: "5px 0" }}>{ex}</div>
+            ))}
+          </div>
+          <div style={{ textAlign: "center" }}>
+            <button
+              className="btn3d"
+              onClick={() => { setPhase("quiz"); onCaption("Асуултад хариулцгаая! ✏️"); }}
+              style={{
+                borderRadius: 18,
+                padding: "14px 28px",
+                fontWeight: 900,
+                fontSize: 19,
+                color: "#FFFFFF",
+                cursor: "pointer",
+                textShadow: "0 2px 0 rgba(0,0,0,0.15)",
+                ...depthStyle(accent, 5),
+              }}
+            >
+              Шалгуулах ✏️
+            </button>
+          </div>
+        </>
+      )}
+
+      {phase === "quiz" && (
+        <div style={{ ...card, textAlign: "center" }}>
+          <div style={{ fontSize: 14, fontWeight: 800, color: "#8A7A66", marginBottom: 8 }}>
+            {qIndex + 1} / {quiz.length}
+          </div>
+          <div key={qIndex} style={{ fontSize: 21, fontWeight: 800, color: "#3A2E22", marginBottom: 20, animation: "popIn 0.3s ease" }}>
+            {quiz[qIndex].q}
+          </div>
+          <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
+            {quiz[qIndex].options.map((opt) => (
+              <button
+                key={opt}
+                className="tile"
+                onClick={() => answer(opt)}
+                style={{
+                  borderRadius: 16,
+                  padding: "14px 16px",
+                  fontSize: 20,
+                  fontWeight: 800,
+                  color: "#FFFFFF",
+                  cursor: "pointer",
+                  textShadow: "0 2px 0 rgba(0,0,0,0.15)",
+                  animation: wrong === opt ? "shakeWrong 0.4s ease" : picked === opt ? "celebrate 0.6s ease" : "none",
+                  ...depthStyle(picked === opt ? "#5FBF6A" : wrong === opt ? "#D9534F" : style.color, 5),
+                }}
+              >
+                {opt}
+              </button>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {phase === "done" && (
+        <div style={{ ...card, textAlign: "center", animation: "popIn 0.4s ease" }}>
+          <div style={{ fontSize: 70 }}>{correctCount === quiz.length ? "🏆" : "⭐"}</div>
+          <div style={{ fontSize: 22, fontWeight: 900, color: "#3A2E22", margin: "8px 0 4px" }}>
+            {correctCount} / {quiz.length} зөв
+          </div>
+          <div style={{ fontSize: 16, fontWeight: 700, color: "#8A7A66", marginBottom: 18 }}>
+            {correctCount === quiz.length ? "Гайхалтай! Бүгдийг зөв хариуллаа." : "Сайн байна! Дахин давтаад үзээрэй."}
+          </div>
+          <div style={{ display: "flex", gap: 12, justifyContent: "center", flexWrap: "wrap" }}>
+            <button
+              className="btn3d"
+              onClick={restart}
+              style={{ borderRadius: 16, padding: "12px 20px", fontWeight: 800, fontSize: 16, color: "#3A2E22", cursor: "pointer", ...depthStyle("#FFFFFF", 4) }}
+            >
+              🔁 Дахин
+            </button>
+            <button
+              className="btn3d"
+              onClick={onBack}
+              style={{ borderRadius: 16, padding: "12px 20px", fontWeight: 800, fontSize: 16, color: "#FFFFFF", cursor: "pointer", ...depthStyle(accent, 4) }}
+            >
+              Бусад хичээл →
+            </button>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
