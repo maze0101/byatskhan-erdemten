@@ -1,4 +1,4 @@
-const CACHE_NAME = "byatskhan-erdemten-v26";
+const CACHE_NAME = "byatskhan-erdemten-v27";
 const SHELL_ASSETS = [
   "index.html",
   "manifest.json",
@@ -12,13 +12,21 @@ const AUDIO_ASSETS = [
   "Narandulam feat Munkh-Erdene,  Shinetsog Geni  - Buu Ai - Sureg ost ( lyric video ).mp3",
   "Relaxing Music Relieves stress, Anxiety and Depression 🌿Heals the Mind - Deep Sleep.mp3",
 ].map(encodeURI);
+// The page can't start without React/Babel, so keep them available offline.
+const CDN_ASSETS = [
+  "https://cdnjs.cloudflare.com/ajax/libs/react/18.2.0/umd/react.production.min.js",
+  "https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.2.0/umd/react-dom.production.min.js",
+  "https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/7.23.5/babel.min.js",
+];
+// Versioned third-party files (scripts, fonts) that are safe to serve cache-first.
+const CDN_HOSTS = ["cdnjs.cloudflare.com", "fonts.googleapis.com", "fonts.gstatic.com"];
 
 self.addEventListener("install", (event) => {
   event.waitUntil(
     caches.open(CACHE_NAME).then((cache) =>
       cache.addAll(SHELL_ASSETS).then(() =>
-        // Cache audio one-by-one so a single failed fetch doesn't block install.
-        Promise.all(AUDIO_ASSETS.map((url) => cache.add(url).catch(() => {})))
+        // Cache CDN scripts and audio one-by-one so a single failed fetch doesn't block install.
+        Promise.all([...CDN_ASSETS, ...AUDIO_ASSETS].map((url) => cache.add(url).catch(() => {})))
       )
     )
   );
@@ -37,6 +45,23 @@ self.addEventListener("activate", (event) => {
 self.addEventListener("fetch", (event) => {
   if (event.request.method !== "GET") return;
   const url = new URL(event.request.url);
+  if (CDN_HOSTS.includes(url.hostname)) {
+    event.respondWith(
+      caches.match(event.request).then(
+        (cached) =>
+          cached ||
+          fetch(event.request).then((response) => {
+            // Opaque (no-cors) responses report status 0 but are still usable.
+            if (response && (response.ok || response.type === "opaque")) {
+              const copy = response.clone();
+              caches.open(CACHE_NAME).then((cache) => cache.put(event.request, copy));
+            }
+            return response;
+          })
+      )
+    );
+    return;
+  }
   // Let the browser handle cross-origin requests directly instead of
   // proxying them through the service worker. Proxying turns them into
   // opaque responses, and opaque responses break Range-request
