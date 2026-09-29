@@ -1349,7 +1349,7 @@ function Mascot({ bounce, emoji, hopAnim, idleAnim }) {
 function App() {
   const [screen, setScreen] = useState(() => {
     try { return localStorage.getItem("profile") ? "home" : "profile"; } catch (e) { return "profile"; }
-  }); // profile | home | letters | numbers | animals | english | colors | mongolian-words | words | games | game-letters | game-numbers | game-memory | game-counting | lullaby | lessons | lesson-grade | lesson
+  }); // profile | home | letters | numbers | animals | english | colors | mongolian-words | words | games | game-letters | game-numbers | game-memory | game-counting | game-script | lullaby | lessons | lesson-grade | lesson
   const [profile, setProfile] = useState(() => {
     try { return localStorage.getItem("profile") || null; } catch (e) { return null; }
   }); // 'boy' | 'girl' | null
@@ -2161,6 +2161,7 @@ function App() {
             onNumbers={startNumberGame}
             onMemory={startMemoryGame}
             onCounting={startCountingGame}
+            onScript={() => setScreen("game-script")}
             theme={theme}
           />
         )}
@@ -2259,6 +2260,14 @@ function App() {
             accent={theme.accent}
             tileColors={theme.tileColors}
             onFlip={flipMemoryCard}
+          />
+        )}
+
+        {screen === "game-script" && (
+          <ScriptGameScreen
+            accent={theme.accent}
+            onCaption={setCaption}
+            onCorrect={(text) => { setCaption(text); bumpMascot(); }}
           />
         )}
 
@@ -2697,7 +2706,7 @@ function HomeScreen({ onPick, onLullaby, onOpenBook, onOpenDaily, streak, dailyD
         <BigCard
           bg={c3}
           label="Тоглоом"
-          sub="4 тоглоом"
+          sub="5 тоглоом"
           display="🎮"
           onClick={() => onPick("games")}
         />
@@ -2813,7 +2822,7 @@ function BigCard({ bg, label, sub, display, onClick }) {
   );
 }
 
-function GamesHub({ onLetters, onNumbers, onMemory, onCounting, theme }) {
+function GamesHub({ onLetters, onNumbers, onMemory, onCounting, onScript, theme }) {
   const [c0, c1, c2, c3] = theme.cardColors;
   return (
     <div>
@@ -2825,6 +2834,7 @@ function GamesHub({ onLetters, onNumbers, onMemory, onCounting, theme }) {
         <BigCard bg={c1} label="" sub={<><b style={{ fontWeight: 900 }}>ЭНДЭЭС ХЭДЭН ХУНДАН ЦАГААН</b> ХОНЬ ОЛЖ ЧАДАХ ВЭ?</>} display="🐑" onClick={onNumbers} />
         <BigCard bg={c2} label="Хосыг ол" sub="Ижил дүрснүүдийг олоорой" display="🧠" onClick={onMemory} />
         <BigCard bg={c3} label="" sub="Сонирхолтой тоонуудыг цээжилье" display="👆" onClick={onCounting} />
+        <BigCard bg="#E0664F" label="Худам таавар" sub="Худам бичгийг кирилл үсэгтэй тааруул" display={<span style={{ ...MONGOL_TEXT, fontSize: 30 }}>ᠮᠣᠩᠭᠣᠯ</span>} onClick={onScript} />
       </div>
     </div>
   );
@@ -3249,13 +3259,35 @@ const TRACE_WORDS = [
   ["НАР", "☀️"], ["ГЭР", "🏠"], ["ХОНЬ", "🐑"], ["МОРЬ", "🐴"], ["ЯМАА", "🐐"], ["ҮХЭР", "🐄"],
 ];
 
-// Traditional script vowels (isolated forms). No stroke-order data for these.
+// Traditional script letters (isolated forms). No stroke data for these: the
+// demo sweeps the glyph from top to bottom, the way the script is written.
 const MONGOL_VOWELS = [["ᠠ", "а"], ["ᠡ", "э"], ["ᠢ", "и"], ["ᠣ", "о"], ["ᠤ", "у"], ["ᠥ", "ө"], ["ᠦ", "ү"]];
 const MONGOL_CONSONANTS = [
   ["ᠨ", "н"], ["ᠩ", "ng"], ["ᠪ", "б"], ["ᠫ", "п"], ["ᠬ", "х"], ["ᠭ", "г"], ["ᠮ", "м"], ["ᠯ", "л"],
   ["ᠰ", "с"], ["ᠱ", "ш"], ["ᠲ", "т"], ["ᠳ", "д"], ["ᠴ", "ч"], ["ᠵ", "ж"], ["ᠶ", "й"], ["ᠷ", "р"],
   ["ᠸ", "в"], ["ᠹ", "ф"], ["ᠺ", "к"], ["ᠼ", "ц"], ["ᠽ", "з"], ["ᠾ", "һ"],
 ];
+const MONGOL_LETTERS = [...MONGOL_VOWELS, ...MONGOL_CONSONANTS];
+const MONGOL_VOWEL_CYR = { "ᠠ": "а", "ᠡ": "э", "ᠢ": "и", "ᠣ": "о", "ᠤ": "у", "ᠥ": "ө", "ᠦ": "ү" };
+
+// Traditional spellings of simple words: [script, modern Cyrillic, emoji].
+const MONGOL_WORDS = [
+  ["ᠡᠵᠢ", "ээж", "👩"], ["ᠠᠪᠤ", "аав", "👨"], ["ᠮᠣᠷᠢ", "морь", "🐴"], ["ᠨᠠᠷᠠ", "нар", "☀️"],
+  ["ᠰᠠᠷᠠ", "сар", "🌙"], ["ᠤᠰᠤ", "ус", "💧"], ["ᠭᠡᠷ", "гэр", "🏠"], ["ᠭᠠᠯ", "гал", "🔥"],
+  ["ᠣᠳᠤ", "од", "⭐"], ["ᠬᠣᠨᠢ", "хонь", "🐑"], ["ᠦᠬᠡᠷ", "үхэр", "🐄"], ["ᠨᠣᠮ", "ном", "📖"],
+  ["ᠮᠣᠳᠤ", "мод", "🌳"], ["ᠨᠣᠬᠠᠢ", "нохой", "🐕"],
+];
+
+// Zero-width joiners force a letter's initial, medial or final shape on its own.
+const ZWJ = "‍";
+function mongolForms(g) {
+  return [["Эхэнд", g + ZWJ], ["Дунд", ZWJ + g + ZWJ], ["Төгсгөлд", ZWJ + g]];
+}
+// A consonant followed by each vowel: на, нэ, ни, но, ну, нө, нү. ng never starts a syllable.
+function mongolSyllables(g, name) {
+  if (MONGOL_VOWEL_CYR[g] || g === "ᠩ") return [];
+  return MONGOL_VOWELS.map(([v, vn]) => [g + v, name + vn]);
+}
 
 const TRACE_MODES = [
   {
@@ -3290,9 +3322,15 @@ const TRACE_MODES = [
     label: "Худам бичиг",
     script: "mongol",
     items: [
-      ...MONGOL_VOWELS.map(([g, name]) => ({ text: g, label: `«${name}» эгшиг` })),
-      ...MONGOL_CONSONANTS.map(([g, name]) => ({ text: g, label: `«${name}» гийгүүлэгч` })),
+      ...MONGOL_VOWELS.map(([g, name]) => ({ text: g, label: `«${name}» эгшиг`, name })),
+      ...MONGOL_CONSONANTS.map(([g, name]) => ({ text: g, label: `«${name}» гийгүүлэгч`, name })),
     ],
+  },
+  {
+    key: "mongol-words",
+    label: "Худам үг",
+    script: "mongol",
+    items: MONGOL_WORDS.map(([w, cyr, emoji]) => ({ text: w, label: `${emoji} ${cyr}` })),
   },
 ];
 
@@ -3300,7 +3338,12 @@ function setTraceFont(ctx, size, text, mode) {
   ctx.textAlign = "center";
   ctx.textBaseline = "middle";
   if (mode.script === "mongol") {
-    ctx.font = `${Math.round(size * 0.6)}px 'Noto Sans Mongolian', sans-serif`;
+    // Drawn rotated, so the text's width is its height on the board.
+    const font = (px) => `${px}px 'Noto Sans Mongolian', sans-serif`;
+    let px = Math.round(size * 0.6);
+    ctx.font = font(px);
+    const w = ctx.measureText(text).width;
+    if (w > size * 0.86) ctx.font = font(Math.floor((px * size * 0.86) / w));
     return;
   }
   const font = (px) => `900 ${px}px Montserrat, 'Baloo 2', sans-serif`;
@@ -3315,7 +3358,7 @@ function setTraceFont(ctx, size, text, mode) {
 
 // Mongolian script is vertical: its glyphs lie on their side in a horizontal
 // canvas, so it is drawn rotated a quarter turn to stand upright.
-function paintTraceGlyph(ctx, size, text, mode, dashed) {
+function paintTraceGlyph(ctx, size, text, mode, dashed, fill = "#EFE6D6") {
   setTraceFont(ctx, size, text, mode);
   ctx.save();
   let x = size / 2, y = size * 0.54;
@@ -3325,7 +3368,7 @@ function paintTraceGlyph(ctx, size, text, mode, dashed) {
     x = 0;
     y = 0;
   }
-  ctx.fillStyle = "#EFE6D6";
+  ctx.fillStyle = fill;
   ctx.fillText(text, x, y);
   if (dashed) {
     ctx.setLineDash([6, 6]);
@@ -3422,6 +3465,77 @@ function drawStrokeDemo(ctx, size, strokes, progress, pen = false) {
   }
 }
 
+// Where a traditional-script glyph has ink: for each pixel row, the middle of
+// its ink (null if none), plus the first and last inked rows.
+const mongolInkCache = new Map();
+function mongolInk(size, text, mode) {
+  const key = `${size}|${text}`;
+  if (mongolInkCache.has(key)) return mongolInkCache.get(key);
+  const canvas = document.createElement("canvas");
+  canvas.width = canvas.height = size;
+  const ctx = canvas.getContext("2d", { willReadFrequently: true });
+  paintTraceGlyph(ctx, size, text, mode, false);
+  const data = ctx.getImageData(0, 0, size, size).data;
+  const rows = [];
+  for (let y = 0; y < size; y++) {
+    let sum = 0, n = 0;
+    for (let x = 0; x < size; x++) if (data[(y * size + x) * 4 + 3] > 100) { sum += x; n++; }
+    rows.push(n ? sum / n : null);
+  }
+  const top = rows.findIndex((r) => r !== null);
+  let bottom = size - 1;
+  while (bottom > top && rows[bottom] === null) bottom--;
+  const ink = top < 0 ? null : { rows, top, bottom };
+  // Don't remember a measurement taken with the fallback font.
+  if (!document.fonts || document.fonts.status === "loaded") mongolInkCache.set(key, ink);
+  return ink;
+}
+
+// Traditional script is written top to bottom, so its demo fills the glyph in
+// orange from the top down with the pencil riding the edge. progress 0..1;
+// Infinity leaves just the green start dot with its down arrow.
+function drawMongolSweep(ctx, size, text, mode, progress, pen = false) {
+  const ink = mongolInk(size, text, mode);
+  if (!ink) return;
+  const { rows, top, bottom } = ink;
+  const inkX = (y) => {
+    for (let i = Math.round(y); i >= top; i--) if (rows[i] !== null) return rows[i];
+    return rows[top];
+  };
+  let tip = null;
+  if (progress !== Infinity) {
+    const cut = top + (bottom - top) * Math.min(1, progress);
+    ctx.save();
+    ctx.beginPath();
+    ctx.rect(0, 0, size, cut + 1);
+    ctx.clip();
+    paintTraceGlyph(ctx, size, text, mode, false, "#FF8A3D");
+    ctx.restore();
+    if (progress < 1) tip = { x: inkX(cut), y: cut };
+  }
+  const r = Math.max(8, size * 0.038);
+  const dot = { x: rows[top], y: top + r * 0.6 };
+  const a = size * 0.045;
+  const ax = dot.x + r * 2.2;
+  ctx.fillStyle = "#3A9E4A";
+  ctx.beginPath();
+  ctx.arc(dot.x, dot.y, r, 0, Math.PI * 2);
+  ctx.fill();
+  ctx.fillRect(ax - 2, dot.y - r, 4, a * 1.4);
+  ctx.beginPath();
+  ctx.moveTo(ax - a * 0.6, dot.y - r + a * 1.2);
+  ctx.lineTo(ax + a * 0.6, dot.y - r + a * 1.2);
+  ctx.lineTo(ax, dot.y - r + a * 2.1);
+  ctx.closePath();
+  ctx.fill();
+  if (pen && tip) {
+    ctx.font = `${Math.round(size * 0.16)}px sans-serif`;
+    ctx.textAlign = "left";
+    ctx.textBaseline = "bottom";
+    ctx.fillText("✏️", tip.x - size * 0.02, tip.y + size * 0.03);
+  }
+}
+
 // Walks the child's strokes against the expected ones. A stroke that starts
 // where the previous one ended is a lifted finger, not a new stroke, and extra
 // touch-ups after the last stroke are fine.
@@ -3453,7 +3567,6 @@ function TraceVideo({ text, mode, size }) {
   const [playing, setPlaying] = useState(true);
   const [restart, setRestart] = useState(0);
   const dpr = window.devicePixelRatio || 1;
-  const noDemo = mode.script === "mongol";
 
   useEffect(() => {
     const canvas = canvasRef.current;
@@ -3464,6 +3577,11 @@ function TraceVideo({ text, mode, size }) {
       ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
       ctx.clearRect(0, 0, size, size);
       paintTraceGlyph(ctx, size, text, mode, false);
+      if (mode.script === "mongol") {
+        const sweep = 2400, loop = sweep + 1400;
+        drawMongolSweep(ctx, size, text, mode, elapsed === Infinity ? 1 : Math.min(1, (elapsed % loop) / sweep), true);
+        return;
+      }
       const strokes = traceStrokePixels(ctx, size, text, mode);
       if (!strokes.length) return;
       const perStroke = strokes.length > 4 ? 750 : 1100;
@@ -3476,7 +3594,7 @@ function TraceVideo({ text, mode, size }) {
       paint(now - start);
       raf = requestAnimationFrame(step);
     };
-    if (playing && !noDemo) raf = requestAnimationFrame(step);
+    if (playing) raf = requestAnimationFrame(step);
     else {
       // Paused: show the finished guide (again once the web font is in).
       paint(Infinity);
@@ -3503,24 +3621,18 @@ function TraceVideo({ text, mode, size }) {
         }}
       >
         <canvas ref={canvasRef} width={size * dpr} height={size * dpr} style={{ width: size, height: size, display: "block" }} />
-        {!noDemo && (
-          <div style={{ position: "absolute", top: 6, left: 8, fontSize: 11, fontWeight: 800, color: playing ? "#D9534F" : "#8A7B66" }}>
-            {playing ? "● Тоглож байна" : "❚❚ Зогссон"}
-          </div>
-        )}
-      </div>
-      {noDemo ? (
-        <div style={{ maxWidth: size, fontSize: 12, fontWeight: 700, color: "#8A7A66" }}>Дээрээс доош дагаж бичээрэй</div>
-      ) : (
-        <div style={{ display: "flex", gap: 6 }}>
-          <button className="btn3d" onClick={() => setPlaying(!playing)} style={btn}>
-            {playing ? "⏸ Зогсоох" : "▶️ Тоглуулах"}
-          </button>
-          <button className="btn3d" onClick={() => { setPlaying(true); setRestart(restart + 1); }} style={btn} aria-label="Дахин эхлүүлэх">
-            🔁
-          </button>
+        <div style={{ position: "absolute", top: 6, left: 8, fontSize: 11, fontWeight: 800, color: playing ? "#D9534F" : "#8A7B66" }}>
+          {playing ? "● Тоглож байна" : "❚❚ Зогссон"}
         </div>
-      )}
+      </div>
+      <div style={{ display: "flex", gap: 6 }}>
+        <button className="btn3d" onClick={() => setPlaying(!playing)} style={btn}>
+          {playing ? "⏸ Зогсоох" : "▶️ Тоглуулах"}
+        </button>
+        <button className="btn3d" onClick={() => { setPlaying(true); setRestart(restart + 1); }} style={btn} aria-label="Дахин эхлүүлэх">
+          🔁
+        </button>
+      </div>
     </div>
   );
 }
@@ -3560,13 +3672,15 @@ function TraceScreen({ accent, onCaption }) {
     const ctx = canvas.getContext("2d");
     ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
     ctx.clearRect(0, 0, size, size);
-    if (!free) drawStrokeDemo(ctx, size, pixelStrokes(), progress);
+    if (free) return;
+    if (mode.script === "mongol") drawMongolSweep(ctx, size, item.text, mode, progress >= 1 ? Infinity : progress);
+    else drawStrokeDemo(ctx, size, pixelStrokes(), progress);
   }
 
   function playDemo() {
     cancelAnimationFrame(animRef.current);
-    const count = pixelStrokes().length;
-    const perStroke = count > 4 ? 600 : 900;
+    const count = mode.script === "mongol" ? 1 : pixelStrokes().length;
+    const perStroke = mode.script === "mongol" ? 2000 : count > 4 ? 600 : 900;
     const start = performance.now();
     const step = (now) => {
       const progress = Math.min(count, (now - start) / perStroke);
@@ -3585,7 +3699,7 @@ function TraceScreen({ accent, onCaption }) {
     clearDrawing();
     if (free) setFree(false);
     else playDemo();
-    onCaption("Ногоон тооноос эхлээд сумны дагуу бичээрэй ✏️");
+    onCaption(mode.script === "mongol" ? "Ногоон цэгээс эхлээд дээрээс доош бичээрэй ✏️" : "Ногоон тооноос эхлээд сумны дагуу бичээрэй ✏️");
   }
 
   useEffect(() => () => cancelAnimationFrame(animRef.current), []);
@@ -3688,7 +3802,14 @@ function TraceScreen({ accent, onCaption }) {
       return;
     }
     const expected = pixelStrokes();
-    const order = expected.length ? checkStrokeOrder(expected, inkRef.current, size * 0.16) : { ok: true };
+    let order = expected.length ? checkStrokeOrder(expected, inkRef.current, size * 0.16) : { ok: true };
+    if (mode.script === "mongol") {
+      // The script runs top to bottom: the child's longest stroke must too.
+      const main = inkRef.current.reduce((a, s) => (s.length > a.length ? s : a), []);
+      if (main.length > 1 && main[main.length - 1].y < main[0].y - size * 0.1) {
+        order = { ok: false, hint: "Худам бичгийг дээрээс доош бичдэг. Ногоон цэгээс эхлээрэй" };
+      }
+    }
     const earned = !order.ok ? 1 : coverage >= (free ? 0.45 : 0.55) ? 3 : 2;
     setResult({ stars: earned });
     setStars((prev) => {
@@ -3731,7 +3852,7 @@ function TraceScreen({ accent, onCaption }) {
   const hint = free
     ? "Одоо шугамгүйгээр өөрөө бичээд үзээрэй 💪"
     : mode.script === "mongol"
-      ? "Тасархай шугамыг дээрээс доош дагаж бичээрэй ✏️"
+      ? "Ногоон цэгээс эхлээд тасархай шугамыг дээрээс доош дагаж бичээрэй ✏️"
       : <>Ногоон <b>1</b>-ээс эхлээд сумны дагуу хуруугаараа бичээрэй ✏️</>;
 
   return (
@@ -3802,6 +3923,7 @@ function TraceScreen({ accent, onCaption }) {
       <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 10, fontSize: 20, fontWeight: 800, color: "#B5773A", margin: "12px 0", minHeight: 28 }}>
         <span>{item.label}</span>
       </div>
+      {mode.key === "mongol" && <MongolLetterForms glyph={item.text} name={item.name} accent={accent} />}
       <div style={{ display: "flex", gap: 10, justifyContent: "center", flexWrap: "wrap" }}>
         <button className="btn3d" onClick={() => go(-1)} style={smallBtn("#FFFFFF", "#3A2E22")}>←</button>
         <button className="btn3d" onClick={showHow} style={smallBtn("#FFFFFF", "#3A2E22")}>👀 Хэрхэн бичих</button>
@@ -3819,8 +3941,8 @@ function TraceScreen({ accent, onCaption }) {
               title={s ? "⭐".repeat(s) : ""}
               style={{
                 minWidth: 40,
-                height: mode.script === "mongol" ? 52 : 40,
-                padding: "0 8px",
+                minHeight: mode.script === "mongol" ? 52 : 40,
+                padding: mode.script === "mongol" ? "6px 8px" : "0 8px",
                 borderRadius: 10,
                 cursor: "pointer",
                 fontWeight: 900,
@@ -3839,6 +3961,148 @@ function TraceScreen({ accent, onCaption }) {
       </div>
       <div style={{ fontSize: 12, fontWeight: 700, color: "#8A7A66", marginTop: 8 }}>
         Шар өнгө = од авсан · ⭐ {mode.items.reduce((sum, it) => sum + (stars[starKey(it)] || 0), 0)}/{mode.items.length * 3}
+      </div>
+    </div>
+  );
+}
+
+const MONGOL_TEXT = { fontFamily: "'Noto Sans Mongolian', sans-serif", writingMode: "vertical-lr" };
+
+// How the current traditional-script letter looks at the start, middle and end
+// of a word, and (for consonants) the syllables it makes with each vowel.
+function MongolLetterForms({ glyph, name, accent }) {
+  const syllables = mongolSyllables(glyph, name);
+  const cell = {
+    display: "flex",
+    flexDirection: "column",
+    alignItems: "center",
+    gap: 4,
+    background: "#FFFFFF",
+    borderRadius: 14,
+    padding: "8px 10px",
+    boxShadow: "0 3px 0 rgba(0,0,0,0.08)",
+  };
+  const caption = { fontSize: 12, fontWeight: 800, color: "#8A7A66" };
+  return (
+    <div style={{ maxWidth: 560, margin: "0 auto 14px" }}>
+      <div style={{ fontSize: 14, fontWeight: 800, color: "#3A6B8A", marginBottom: 8 }}>Үгийн хаана орохоос хамаарч хэлбэр нь өөрчлөгдөнө</div>
+      <div style={{ display: "flex", gap: 10, justifyContent: "center", flexWrap: "wrap" }}>
+        {mongolForms(glyph).map(([where, form]) => (
+          <div key={where} style={cell}>
+            <div style={{ ...MONGOL_TEXT, fontSize: 40, color: accent, minHeight: 60 }}>{form}</div>
+            <div style={caption}>{where}</div>
+          </div>
+        ))}
+      </div>
+      {syllables.length > 0 && (
+        <>
+          <div style={{ fontSize: 14, fontWeight: 800, color: "#3A6B8A", margin: "14px 0 8px" }}>Үе</div>
+          <div style={{ display: "flex", gap: 8, justifyContent: "center", flexWrap: "wrap" }}>
+            {syllables.map(([script, cyr]) => (
+              <div key={script} style={{ ...cell, padding: "6px 8px" }}>
+                <div style={{ ...MONGOL_TEXT, fontSize: 28, color: "#3A2E22", minHeight: 44 }}>{script}</div>
+                <div style={caption}>{cyr}</div>
+              </div>
+            ))}
+          </div>
+        </>
+      )}
+    </div>
+  );
+}
+
+// Guessing game: a traditional letter or word with Cyrillic choices, or the
+// other way round.
+function makeScriptRound() {
+  const useWord = Math.random() < 0.35;
+  const pool = useWord
+    ? MONGOL_WORDS.map(([script, cyr, emoji]) => ({ script, cyr, emoji }))
+    : MONGOL_LETTERS.filter(([g]) => g !== "ᠩ").map(([script, cyr]) => ({ script, cyr }));
+  const item = pool[Math.floor(Math.random() * pool.length)];
+  const options = shuffle([item, ...shuffle(pool.filter((p) => p !== item)).slice(0, 2)]);
+  return { item, options, toScript: Math.random() < 0.5 };
+}
+
+function ScriptGameScreen({ accent, onCaption, onCorrect }) {
+  const [round, setRound] = useState(makeScriptRound);
+  const [score, setScore] = useState(0);
+  const [solved, setSolved] = useState(false);
+  const [wrong, setWrong] = useState(null);
+  const { item, options, toScript } = round;
+  const prompt = toScript ? "Худам бичгээр аль нь вэ? 🎯" : "Энэ юу гэсэн үг вэ? 🎯";
+
+  useEffect(() => { onCaption(prompt); }, [round]);
+
+  function answer(opt) {
+    if (solved) return;
+    if (opt === item) {
+      setSolved(true);
+      setScore((s) => s + 1);
+      onCorrect(`Зөв байна! ${item.cyr} ${item.emoji || ""}`);
+      setTimeout(() => {
+        setSolved(false);
+        setRound(makeScriptRound());
+      }, 1100);
+    } else {
+      setWrong(opt);
+      onCaption("Дахин оролдоорой 💪");
+      setTimeout(() => setWrong(null), 500);
+    }
+  }
+
+  const scriptStyle = (px) => ({ ...MONGOL_TEXT, fontSize: px });
+  return (
+    <div style={{ textAlign: "center" }}>
+      <div style={{ display: "inline-block", background: "#FFFFFF", borderRadius: 16, padding: "6px 16px", fontWeight: 800, fontSize: 16, color: "#3A2E22", marginBottom: 14, boxShadow: "0 3px 0 rgba(0,0,0,0.1)" }}>
+        ⭐ {score}
+      </div>
+      <div style={{ fontSize: 17, fontWeight: 800, color: "#3A6B8A", marginBottom: 12 }}>{prompt}</div>
+      <div
+        style={{
+          display: "inline-flex",
+          flexDirection: "column",
+          alignItems: "center",
+          justifyContent: "center",
+          minWidth: 150,
+          minHeight: 150,
+          padding: 16,
+          marginBottom: 22,
+          borderRadius: 24,
+          background: "#FFFFFF",
+          boxShadow: solved ? "0 0 0 5px #5FBF6A, 0 6px 0 rgba(0,0,0,0.1)" : "0 6px 0 rgba(0,0,0,0.1)",
+          animation: solved ? "celebrate 0.6s ease" : "none",
+        }}
+      >
+        {item.emoji && <div style={{ fontSize: 44, marginBottom: 6 }}>{item.emoji}</div>}
+        {toScript ? (
+          <div style={{ fontSize: 44, fontWeight: 900, color: "#3A2E22" }}>{item.cyr}</div>
+        ) : (
+          <div style={{ ...scriptStyle(item.emoji ? 56 : 80), color: "#3A2E22" }}>{item.script}</div>
+        )}
+      </div>
+      <div style={{ display: "flex", gap: 14, justifyContent: "center", flexWrap: "wrap", maxWidth: 420, margin: "0 auto" }}>
+        {options.map((opt) => (
+          <button
+            key={opt.script}
+            className="tile"
+            onClick={() => answer(opt)}
+            style={{
+              minWidth: 96,
+              minHeight: toScript ? 120 : 84,
+              padding: "10px 12px",
+              borderRadius: 20,
+              color: "#FFFFFF",
+              fontWeight: 900,
+              cursor: "pointer",
+              textShadow: "0 2px 0 rgba(0,0,0,0.18)",
+              animation: wrong === opt ? "shakeWrong 0.4s ease" : "none",
+              ...depthStyle(solved && opt === item ? "#5FBF6A" : wrong === opt ? "#D9534F" : accent, 5),
+              ...(toScript ? scriptStyle(opt.emoji ? 34 : 46) : { fontSize: 30 }),
+            }}
+          >
+            {toScript ? opt.script : opt.cyr}
+          </button>
+        ))}
       </div>
     </div>
   );
