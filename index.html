@@ -3251,6 +3251,11 @@ const TRACE_WORDS = [
 
 // Traditional script vowels (isolated forms). No stroke-order data for these.
 const MONGOL_VOWELS = [["ᠠ", "а"], ["ᠡ", "э"], ["ᠢ", "и"], ["ᠣ", "о"], ["ᠤ", "у"], ["ᠥ", "ө"], ["ᠦ", "ү"]];
+const MONGOL_CONSONANTS = [
+  ["ᠨ", "н"], ["ᠩ", "ng"], ["ᠪ", "б"], ["ᠫ", "п"], ["ᠬ", "х"], ["ᠭ", "г"], ["ᠮ", "м"], ["ᠯ", "л"],
+  ["ᠰ", "с"], ["ᠱ", "ш"], ["ᠲ", "т"], ["ᠳ", "д"], ["ᠴ", "ч"], ["ᠵ", "ж"], ["ᠶ", "й"], ["ᠷ", "р"],
+  ["ᠸ", "в"], ["ᠹ", "ф"], ["ᠺ", "к"], ["ᠼ", "ц"], ["ᠽ", "з"], ["ᠾ", "һ"],
+];
 
 const TRACE_MODES = [
   {
@@ -3284,7 +3289,10 @@ const TRACE_MODES = [
     key: "mongol",
     label: "Худам бичиг",
     script: "mongol",
-    items: MONGOL_VOWELS.map(([g, name]) => ({ text: g, label: `«${name}» эгшиг` })),
+    items: [
+      ...MONGOL_VOWELS.map(([g, name]) => ({ text: g, label: `«${name}» эгшиг` })),
+      ...MONGOL_CONSONANTS.map(([g, name]) => ({ text: g, label: `«${name}» гийгүүлэгч` })),
+    ],
   },
 ];
 
