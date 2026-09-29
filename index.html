@@ -1946,7 +1946,7 @@ function App() {
       }}
     >
       <style>{`
-        @import url('https://fonts.googleapis.com/css2?family=Baloo+2:wght@500;600;700;800&family=Montserrat:wght@600;700;800;900&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=Baloo+2:wght@500;600;700;800&family=Montserrat:wght@600;700;800;900&family=Noto+Sans+Mongolian&display=swap');
         * { box-sizing: border-box; }
         @keyframes popIn {
           0% { transform: scale(0.4) translateY(10px); opacity: 0; }
@@ -3160,23 +3160,427 @@ function DailyTask({ grade, done, streak, onComplete, onWrong }) {
   );
 }
 
-const TRACE_SETS = {
-  letters: ALPHABET.map((a) => a.letter),
-  numbers: ["0", "1", "2", "3", "4", "5", "6", "7", "8", "9"],
+// Stroke-order guides. Points are [x, y] in the glyph's box: x 0..1 across its
+// ink width, y 0 = cap top, 1 = baseline (y < 0 for marks above, > 1 for tails).
+// Angles for arcs are in degrees, canvas-style: 0 right, 90 down, -90 up.
+function arc(cx, cy, rx, ry, a0, a1, n = 20) {
+  const pts = [];
+  for (let i = 0; i <= n; i++) {
+    const a = ((a0 + ((a1 - a0) * i) / n) * Math.PI) / 180;
+    pts.push([cx + rx * Math.cos(a), cy + ry * Math.sin(a)]);
+  }
+  return pts;
+}
+const STEM = (x) => [[x, 0.08], [x, 0.92]];
+const Z_SHAPE = [...arc(0.5, 0.27, 0.36, 0.2, 200, 450), ...arc(0.5, 0.7, 0.38, 0.22, 270, 520)];
+const E_BARS = [STEM(0.16), [[0.16, 0.08], [0.88, 0.08]], [[0.16, 0.5], [0.8, 0.5]], [[0.16, 0.92], [0.9, 0.92]]];
+const I_SHAPE = [STEM(0.12), [[0.12, 0.92], [0.88, 0.08]], STEM(0.88)];
+const O_SHAPE = arc(0.5, 0.5, 0.4, 0.42, -90, -450, 32);
+
+const TRACE_STROKES = {
+  "А": [[[0.5, 0.06], [0.08, 0.94]], [[0.5, 0.06], [0.92, 0.94]], [[0.27, 0.7], [0.73, 0.7]]],
+  "Б": [STEM(0.14), [[0.14, 0.08], [0.88, 0.08]], [[0.14, 0.46], [0.58, 0.46], ...arc(0.58, 0.69, 0.3, 0.23, -90, 90), [0.14, 0.92]]],
+  "В": [STEM(0.14), [[0.14, 0.08], [0.55, 0.08], ...arc(0.55, 0.27, 0.28, 0.19, -90, 90), [0.14, 0.46]], [[0.14, 0.46], [0.58, 0.46], ...arc(0.58, 0.69, 0.3, 0.23, -90, 90), [0.14, 0.92]]],
+  "Г": [STEM(0.18), [[0.18, 0.08], [0.92, 0.08]]],
+  "Д": [[[0.3, 0.08], [0.28, 0.6], [0.15, 0.88]], [[0.3, 0.08], [0.8, 0.08], [0.8, 0.88]], [[0.06, 1.15], [0.06, 0.88], [0.94, 0.88], [0.94, 1.15]]],
+  "Е": E_BARS,
+  "Ё": [...E_BARS, [[0.35, -0.2], [0.35, -0.15]], [[0.65, -0.2], [0.65, -0.15]]],
+  "Ж": [[[0.08, 0.08], [0.44, 0.5], [0.05, 0.92]], STEM(0.5), [[0.92, 0.08], [0.56, 0.5], [0.95, 0.92]]],
+  "З": [Z_SHAPE],
+  "И": I_SHAPE,
+  "Й": [...I_SHAPE, arc(0.5, -0.24, 0.18, 0.1, 180, 0, 12)],
+  "К": [STEM(0.14), [[0.86, 0.08], [0.24, 0.52], [0.9, 0.92]]],
+  "Л": [[[0.06, 0.9], [0.2, 0.8], [0.26, 0.08]], [[0.26, 0.08], [0.84, 0.08], [0.84, 0.92]]],
+  "М": [[[0.1, 0.92], [0.1, 0.08], [0.5, 0.7], [0.9, 0.08], [0.9, 0.92]]],
+  "Н": [STEM(0.12), STEM(0.88), [[0.12, 0.5], [0.88, 0.5]]],
+  "О": [O_SHAPE],
+  "Ө": [O_SHAPE, [[0.12, 0.5], [0.88, 0.5]]],
+  "П": [STEM(0.14), [[0.14, 0.08], [0.86, 0.08], [0.86, 0.92]]],
+  "Р": [STEM(0.14), [[0.14, 0.08], [0.55, 0.08], ...arc(0.55, 0.32, 0.32, 0.24, -90, 90), [0.14, 0.56]]],
+  "С": [arc(0.52, 0.5, 0.4, 0.42, -40, -320, 28)],
+  "Т": [[[0.08, 0.08], [0.92, 0.08]], STEM(0.5)],
+  "У": [[[0.08, 0.08], [0.5, 0.64]], [[0.92, 0.08], [0.35, 0.92]]],
+  "Ү": [[[0.08, 0.08], [0.5, 0.5]], [[0.92, 0.08], [0.5, 0.5]], [[0.5, 0.5], [0.5, 0.92]]],
+  "Ф": [STEM(0.5), arc(0.5, 0.5, 0.42, 0.3, -90, -450, 32)],
+  "Х": [[[0.08, 0.08], [0.92, 0.92]], [[0.92, 0.08], [0.08, 0.92]]],
+  "Ц": [[[0.12, 0.08], [0.12, 0.88]], [[0.8, 0.08], [0.8, 0.88]], [[0.12, 0.88], [0.93, 0.88], [0.93, 1.15]]],
+  "Ч": [[[0.14, 0.08], [0.14, 0.38], [0.22, 0.52], [0.4, 0.57], [0.84, 0.55]], STEM(0.84)],
+  "Ш": [STEM(0.1), STEM(0.5), STEM(0.9), [[0.1, 0.92], [0.9, 0.92]]],
+  "Щ": [[[0.09, 0.08], [0.09, 0.88]], [[0.46, 0.08], [0.46, 0.88]], [[0.83, 0.08], [0.83, 0.88]], [[0.09, 0.88], [0.94, 0.88], [0.94, 1.15]]],
+  "Ъ": [[[0.04, 0.08], [0.3, 0.08]], STEM(0.3), [[0.3, 0.46], [0.62, 0.46], ...arc(0.62, 0.69, 0.28, 0.23, -90, 90), [0.3, 0.92]]],
+  "Ы": [STEM(0.1), [[0.1, 0.46], [0.4, 0.46], ...arc(0.4, 0.69, 0.22, 0.23, -90, 90), [0.1, 0.92]], STEM(0.9)],
+  "Ь": [STEM(0.16), [[0.16, 0.46], [0.55, 0.46], ...arc(0.55, 0.69, 0.33, 0.23, -90, 90), [0.16, 0.92]]],
+  "Э": [arc(0.48, 0.5, 0.4, 0.42, 220, 500, 28), [[0.35, 0.5], [0.86, 0.5]]],
+  "Ю": [STEM(0.08), [[0.08, 0.5], [0.3, 0.5]], arc(0.62, 0.5, 0.3, 0.42, -90, -450, 32)],
+  "Я": [[[0.86, 0.08], [0.45, 0.08], ...arc(0.45, 0.3, 0.33, 0.22, 270, 90), [0.86, 0.52]], [[0.45, 0.52], [0.12, 0.92]], STEM(0.86)],
+  "0": [O_SHAPE],
+  "1": [[[0.1, 0.2], [0.7, 0.08], [0.7, 0.92]]],
+  "2": [[...arc(0.5, 0.3, 0.36, 0.22, 200, 390), [0.12, 0.92], [0.92, 0.92]]],
+  "3": [Z_SHAPE],
+  "4": [[[0.66, 0.08], [0.08, 0.7], [0.95, 0.7]], [[0.68, 0.08], [0.68, 0.92]]],
+  "5": [[[0.84, 0.08], [0.2, 0.08], [0.17, 0.46], ...arc(0.48, 0.66, 0.38, 0.26, -110, 150)]],
+  "6": [[[0.72, 0.08], [0.16, 0.55], ...arc(0.5, 0.65, 0.38, 0.28, 180, -180, 28)]],
+  "7": [[[0.08, 0.08], [0.92, 0.08], [0.35, 0.92]]],
+  "8": [[...arc(0.5, 0.28, 0.32, 0.2, -90, -270), ...arc(0.5, 0.7, 0.38, 0.22, -90, 270, 28), ...arc(0.5, 0.28, 0.32, 0.2, 90, -90)]],
+  "9": [[...arc(0.5, 0.35, 0.38, 0.27, 0, -360, 28), [0.3, 0.92]]],
 };
 
+// Lowercase forms that differ from a small copy of the capital. Same box as
+// capitals but measured on the x-height: y 0 = x-height, 1 = baseline.
+const E_LOWER = [[0.12, 0.52], [0.88, 0.52], ...arc(0.5, 0.5, 0.38, 0.42, 0, -320, 28)];
+const TRACE_STROKES_LOWER = {
+  "а": [[...arc(0.5, 0.3, 0.35, 0.22, 200, 360), [0.85, 0.3], [0.85, 0.92]], [[0.85, 0.48], [0.5, 0.48], ...arc(0.5, 0.7, 0.36, 0.22, 270, 30)]],
+  "б": [[[0.8, -0.35], [0.4, -0.28], [0.16, 0.15], ...arc(0.52, 0.5, 0.37, 0.42, 190, -170, 28)]],
+  "е": [E_LOWER],
+  "ё": [E_LOWER, [[0.35, -0.3], [0.35, -0.25]], [[0.65, -0.3], [0.65, -0.25]]],
+  "й": [...I_SHAPE, arc(0.5, -0.3, 0.18, 0.12, 180, 0, 12)],
+  "р": [[[0.14, 0.08], [0.14, 1.4]], [[0.14, 0.3], ...arc(0.52, 0.5, 0.36, 0.42, -150, 150, 28)]],
+  "у": [[[0.08, 0.08], [0.5, 0.9]], [[0.92, 0.08], [0.45, 1.25], [0.2, 1.4]]],
+  "ү": [[[0.08, 0.08], [0.5, 0.9]], [[0.92, 0.08], [0.5, 0.9], [0.5, 1.4]]],
+  "ф": [[[0.5, -0.35], [0.5, 1.4]], arc(0.5, 0.5, 0.42, 0.42, -90, -450, 32)],
+};
+
+function glyphStrokes(ch) {
+  return TRACE_STROKES_LOWER[ch] || TRACE_STROKES[ch.toUpperCase()] || [];
+}
+
+const TRACE_WORDS = [
+  ["ОД", "⭐"], ["УС", "💧"], ["ААВ", "👨"], ["ЭЭЖ", "👩"], ["ГАЛ", "🔥"], ["САР", "🌙"],
+  ["НАР", "☀️"], ["ГЭР", "🏠"], ["ХОНЬ", "🐑"], ["МОРЬ", "🐴"], ["ЯМАА", "🐐"], ["ҮХЭР", "🐄"],
+];
+
+// Traditional script vowels (isolated forms). No stroke-order data for these.
+const MONGOL_VOWELS = [["ᠠ", "а"], ["ᠡ", "э"], ["ᠢ", "и"], ["ᠣ", "о"], ["ᠤ", "у"], ["ᠥ", "ө"], ["ᠦ", "ү"]];
+
+const TRACE_MODES = [
+  {
+    key: "upper",
+    label: "Том үсэг",
+    items: ALPHABET.map((a) => ({ text: a.letter, label: a.word ? `${a.emoji} ${a.word}` : "" })),
+  },
+  {
+    key: "lower",
+    label: "Жижиг үсэг",
+    lower: true,
+    items: ALPHABET.map((a) => ({
+      text: a.letter.toLowerCase(),
+      label: a.word ? `${a.emoji} ${a.word.toLowerCase()}` : "",
+    })),
+  },
+  {
+    key: "numbers",
+    label: "Тоо",
+    items: "0123456789".split("").map((d) => {
+      const word = d === "0" ? "тэг" : NUMBERS[Number(d) - 1].word;
+      return { text: d, label: word };
+    }),
+  },
+  {
+    key: "words",
+    label: "Үг",
+    items: TRACE_WORDS.map(([w, emoji]) => ({ text: w, label: `${emoji} ${w.toLowerCase()}` })),
+  },
+  {
+    key: "mongol",
+    label: "Худам бичиг",
+    script: "mongol",
+    items: MONGOL_VOWELS.map(([g, name]) => ({ text: g, label: `«${name}» эгшиг` })),
+  },
+];
+
+function setTraceFont(ctx, size, text, mode) {
+  ctx.textAlign = "center";
+  ctx.textBaseline = "middle";
+  if (mode.script === "mongol") {
+    ctx.font = `${Math.round(size * 0.6)}px 'Noto Sans Mongolian', sans-serif`;
+    return;
+  }
+  const font = (px) => `900 ${px}px Montserrat, 'Baloo 2', sans-serif`;
+  let px = Math.round(size * (mode.lower ? 0.92 : 0.78));
+  ctx.font = font(px);
+  const w = ctx.measureText(text).width;
+  if (w > size * 0.88) {
+    px = Math.floor((px * size * 0.88) / w);
+    ctx.font = font(px);
+  }
+}
+
+// Mongolian script is vertical: its glyphs lie on their side in a horizontal
+// canvas, so it is drawn rotated a quarter turn to stand upright.
+function paintTraceGlyph(ctx, size, text, mode, dashed) {
+  setTraceFont(ctx, size, text, mode);
+  ctx.save();
+  let x = size / 2, y = size * 0.54;
+  if (mode.script === "mongol") {
+    ctx.translate(size / 2, size / 2);
+    ctx.rotate(Math.PI / 2);
+    x = 0;
+    y = 0;
+  }
+  ctx.fillStyle = "#EFE6D6";
+  ctx.fillText(text, x, y);
+  if (dashed) {
+    ctx.setLineDash([6, 6]);
+    ctx.lineWidth = 2;
+    ctx.strokeStyle = "#C4B294";
+    ctx.strokeText(text, x, y);
+  }
+  ctx.restore();
+}
+
+// Every stroke of `text` in canvas pixels, letter by letter, in writing order.
+function traceStrokePixels(ctx, size, text, mode) {
+  if (mode.script === "mongol") return [];
+  setTraceFont(ctx, size, text, mode);
+  const ref = ctx.measureText(mode.lower ? "н" : "Н");
+  const top = size * 0.54 - ref.actualBoundingBoxAscent;
+  const height = ref.actualBoundingBoxAscent + ref.actualBoundingBoxDescent;
+  let x = size / 2 - ctx.measureText(text).width / 2;
+  ctx.textAlign = "left";
+  const out = [];
+  for (const ch of text) {
+    const m = ctx.measureText(ch);
+    const left = x - m.actualBoundingBoxLeft;
+    const width = m.actualBoundingBoxLeft + m.actualBoundingBoxRight;
+    glyphStrokes(ch).forEach((stroke) => out.push(stroke.map(([px, py]) => ({ x: left + px * width, y: top + py * height }))));
+    x += m.width;
+  }
+  return out;
+}
+
+// Draws the numbered, arrowed strokes up to `progress` (fractional part = the
+// stroke in progress). With `pen`, a pencil rides the tip of the current stroke.
+function drawStrokeDemo(ctx, size, strokes, progress, pen = false) {
+  const color = "#FF8A3D";
+  const r = Math.max(8, size * (strokes.length > 6 ? 0.03 : 0.038));
+  let penTip = null;
+  const dots = []; // start dots placed so far, to keep shared starts (Д, П…) readable
+  strokes.forEach((pts, si) => {
+    if (progress <= si) return;
+    const segs = pts.slice(1).map((p, i) => Math.hypot(p.x - pts[i].x, p.y - pts[i].y));
+    const total = segs.reduce((a, b) => a + b, 0);
+    let remaining = total * Math.min(1, progress - si);
+    ctx.lineCap = "round";
+    ctx.lineJoin = "round";
+    ctx.lineWidth = size * 0.03;
+    ctx.strokeStyle = color;
+    ctx.beginPath();
+    ctx.moveTo(pts[0].x, pts[0].y);
+    let tip = pts[0], dir = { x: 1, y: 0 };
+    for (let i = 0; i < segs.length && remaining > 0; i++) {
+      const t = Math.min(1, remaining / (segs[i] || 1));
+      tip = { x: pts[i].x + (pts[i + 1].x - pts[i].x) * t, y: pts[i].y + (pts[i + 1].y - pts[i].y) * t };
+      if (segs[i] > 0) dir = { x: (pts[i + 1].x - pts[i].x) / segs[i], y: (pts[i + 1].y - pts[i].y) / segs[i] };
+      ctx.lineTo(tip.x, tip.y);
+      remaining -= segs[i];
+    }
+    ctx.stroke();
+    if (progress - si < 1) penTip = tip;
+    // Arrow head showing which way to move.
+    if (total > size * 0.05) {
+      const a = size * 0.045;
+      ctx.fillStyle = color;
+      ctx.beginPath();
+      ctx.moveTo(tip.x + dir.x * a * 0.6, tip.y + dir.y * a * 0.6);
+      ctx.lineTo(tip.x - dir.x * a + dir.y * a * 0.7, tip.y - dir.y * a - dir.x * a * 0.7);
+      ctx.lineTo(tip.x - dir.x * a - dir.y * a * 0.7, tip.y - dir.y * a + dir.x * a * 0.7);
+      ctx.closePath();
+      ctx.fill();
+    }
+    // Numbered start dot, nudged along its stroke if an earlier dot sits there.
+    let dot = pts[0];
+    if (dots.some((d) => Math.hypot(d.x - dot.x, d.y - dot.y) < r * 1.8) && segs[0] > 0) {
+      const ux = (pts[1].x - pts[0].x) / segs[0], uy = (pts[1].y - pts[0].y) / segs[0];
+      const shift = Math.min(r * 2.2, segs[0]);
+      dot = { x: dot.x + ux * shift, y: dot.y + uy * shift };
+    }
+    dots.push(dot);
+    ctx.fillStyle = "#3A9E4A";
+    ctx.beginPath();
+    ctx.arc(dot.x, dot.y, r, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.fillStyle = "#FFFFFF";
+    ctx.font = `800 ${Math.round(r * 1.3)}px Montserrat, sans-serif`;
+    ctx.textAlign = "center";
+    ctx.textBaseline = "middle";
+    ctx.fillText(String(si + 1), dot.x, dot.y + 1);
+  });
+  if (pen && penTip) {
+    // ✏️ writes with its bottom-left corner, so draw it up and right of the tip.
+    ctx.font = `${Math.round(size * 0.16)}px sans-serif`;
+    ctx.textAlign = "left";
+    ctx.textBaseline = "bottom";
+    ctx.fillText("✏️", penTip.x - size * 0.02, penTip.y + size * 0.03);
+  }
+}
+
+// Walks the child's strokes against the expected ones. A stroke that starts
+// where the previous one ended is a lifted finger, not a new stroke, and extra
+// touch-ups after the last stroke are fine.
+function checkStrokeOrder(expected, drawn, tol) {
+  const near = (a, b) => Math.hypot(a.x - b.x, a.y - b.y) <= tol;
+  let j = 0;
+  let prevEnd = null;
+  for (const d of drawn) {
+    const start = d[0];
+    const end = d[d.length - 1];
+    const exp = expected[j];
+    if (exp && near(start, exp[0])) j++;
+    else if (prevEnd && near(start, prevEnd)) { /* continuing the same stroke */ }
+    else if (!exp) { /* touch-up after the last stroke */ }
+    else if (near(end, exp[0]) && near(start, exp[exp.length - 1])) {
+      return { ok: false, hint: `${j + 1}-р зурлагыг эсрэг зүгт бичлээ. Сумыг дагаарай` };
+    } else {
+      return { ok: false, hint: `${j + 1}-р зурлагыг ногоон цэг дээрх ${j + 1} тооноос эхлээрэй` };
+    }
+    prevEnd = end;
+  }
+  if (j < expected.length) return { ok: false, hint: `${j + 1}-р зурлагыг бичихээ мартжээ` };
+  return { ok: true };
+}
+
+// A looping "how to write it" clip shown beside the tracing board.
+function TraceVideo({ text, mode, size }) {
+  const canvasRef = useRef(null);
+  const [playing, setPlaying] = useState(true);
+  const [restart, setRestart] = useState(0);
+  const dpr = window.devicePixelRatio || 1;
+  const noDemo = mode.script === "mongol";
+
+  useEffect(() => {
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+    const ctx = canvas.getContext("2d");
+    let raf = 0;
+    const paint = (elapsed) => {
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+      ctx.clearRect(0, 0, size, size);
+      paintTraceGlyph(ctx, size, text, mode, false);
+      const strokes = traceStrokePixels(ctx, size, text, mode);
+      if (!strokes.length) return;
+      const perStroke = strokes.length > 4 ? 750 : 1100;
+      const loop = strokes.length * perStroke + 1400; // hold the finished glyph before looping
+      const progress = elapsed === Infinity ? strokes.length : Math.min(strokes.length, (elapsed % loop) / perStroke);
+      drawStrokeDemo(ctx, size, strokes, progress, true);
+    };
+    const start = performance.now();
+    const step = (now) => {
+      paint(now - start);
+      raf = requestAnimationFrame(step);
+    };
+    if (playing && !noDemo) raf = requestAnimationFrame(step);
+    else {
+      // Paused: show the finished guide (again once the web font is in).
+      paint(Infinity);
+      if (document.fonts && document.fonts.ready) document.fonts.ready.then(() => paint(Infinity));
+    }
+    return () => cancelAnimationFrame(raf);
+  }, [text, mode.key, playing, restart, size]);
+
+  const btn = { borderRadius: 12, padding: "6px 12px", fontWeight: 800, fontSize: 14, color: "#3A2E22", cursor: "pointer", ...depthStyle("#FFFFFF", 3) };
+
+  return (
+    <div style={{ display: "inline-flex", flexDirection: "column", alignItems: "center", gap: 8 }}>
+      <div style={{ fontSize: 14, fontWeight: 800, color: "#3A6B8A" }}>🎬 Заавар видео</div>
+      <div
+        style={{
+          position: "relative",
+          width: size,
+          height: size,
+          borderRadius: 18,
+          background: "#FFFDF7",
+          border: "3px solid #3A2E22",
+          boxShadow: "0 6px 0 rgba(0,0,0,0.1)",
+          overflow: "hidden",
+        }}
+      >
+        <canvas ref={canvasRef} width={size * dpr} height={size * dpr} style={{ width: size, height: size, display: "block" }} />
+        {!noDemo && (
+          <div style={{ position: "absolute", top: 6, left: 8, fontSize: 11, fontWeight: 800, color: playing ? "#D9534F" : "#8A7B66" }}>
+            {playing ? "● Тоглож байна" : "❚❚ Зогссон"}
+          </div>
+        )}
+      </div>
+      {noDemo ? (
+        <div style={{ maxWidth: size, fontSize: 12, fontWeight: 700, color: "#8A7A66" }}>Дээрээс доош дагаж бичээрэй</div>
+      ) : (
+        <div style={{ display: "flex", gap: 6 }}>
+          <button className="btn3d" onClick={() => setPlaying(!playing)} style={btn}>
+            {playing ? "⏸ Зогсоох" : "▶️ Тоглуулах"}
+          </button>
+          <button className="btn3d" onClick={() => { setPlaying(true); setRestart(restart + 1); }} style={btn} aria-label="Дахин эхлүүлэх">
+            🔁
+          </button>
+        </div>
+      )}
+    </div>
+  );
+}
+
+const PEN_COLORS = ["accent", "#E0664F", "#F2A93B", "#3A9E4A", "#3A6BD9", "#9B59B6", "rainbow"];
+const STAR_BG = ["#FFFFFF", "#FFF3C4", "#FFE08A", "#FFC93C"];
+
 function TraceScreen({ accent, onCaption }) {
-  const [mode, setMode] = useState("letters");
+  const [modeKey, setModeKey] = useState("upper");
   const [idx, setIdx] = useState(0);
-  const [result, setResult] = useState(null); // 'good' | 'try' | null
+  const [result, setResult] = useState(null); // { stars } | null
+  const [free, setFree] = useState(false); // write without the dashed guide
+  const [pen, setPen] = useState(() => loadJSON("tracePen", "accent"));
+  const [stars, setStars] = useState(() => loadJSON("traceStars", {})); // { "mode:text": best stars 1-3 }
   const [size] = useState(() => Math.min(320, window.innerWidth - 40));
   const guideRef = useRef(null);
+  const demoRef = useRef(null);
   const drawRef = useRef(null);
   const drawingRef = useRef(false);
   const lastRef = useRef(null);
+  const animRef = useRef(0);
+  const inkRef = useRef([]); // the child's strokes, for the stroke-order check
+  const hueRef = useRef(0);
   const dpr = window.devicePixelRatio || 1;
-  const glyph = TRACE_SETS[mode][idx];
-  const letterInfo = mode === "letters" ? ALPHABET.find((a) => a.letter === glyph) : null;
+  const mode = TRACE_MODES.find((m) => m.key === modeKey);
+  const item = mode.items[idx];
+  const starKey = (it) => `${mode.key}:${it.text}`;
+
+  function pixelStrokes() {
+    return traceStrokePixels(guideRef.current.getContext("2d"), size, item.text, mode);
+  }
+
+  // progress = how many strokes are drawn (fractional part = current stroke).
+  function renderDemo(progress) {
+    const canvas = demoRef.current;
+    if (!canvas || !guideRef.current) return;
+    const ctx = canvas.getContext("2d");
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    ctx.clearRect(0, 0, size, size);
+    if (!free) drawStrokeDemo(ctx, size, pixelStrokes(), progress);
+  }
+
+  function playDemo() {
+    cancelAnimationFrame(animRef.current);
+    const count = pixelStrokes().length;
+    const perStroke = count > 4 ? 600 : 900;
+    const start = performance.now();
+    const step = (now) => {
+      const progress = Math.min(count, (now - start) / perStroke);
+      renderDemo(progress);
+      if (progress < count) animRef.current = requestAnimationFrame(step);
+    };
+    animRef.current = requestAnimationFrame(step);
+  }
+
+  function finishDemo() {
+    cancelAnimationFrame(animRef.current);
+    renderDemo(Infinity);
+  }
+
+  function showHow() {
+    clearDrawing();
+    if (free) setFree(false);
+    else playDemo();
+    onCaption("Ногоон тооноос эхлээд сумны дагуу бичээрэй ✏️");
+  }
+
+  useEffect(() => () => cancelAnimationFrame(animRef.current), []);
 
   function drawGuide() {
     const canvas = guideRef.current;
@@ -3184,30 +3588,29 @@ function TraceScreen({ accent, onCaption }) {
     const ctx = canvas.getContext("2d");
     ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
     ctx.clearRect(0, 0, size, size);
-    ctx.textAlign = "center";
-    ctx.textBaseline = "middle";
-    ctx.font = `900 ${Math.round(size * 0.78)}px Montserrat, 'Baloo 2', sans-serif`;
-    ctx.fillStyle = "#EFE6D6";
-    ctx.fillText(glyph, size / 2, size * 0.54);
-    ctx.setLineDash([6, 6]);
-    ctx.lineWidth = 2;
-    ctx.strokeStyle = "#C4B294";
-    ctx.strokeText(glyph, size / 2, size * 0.54);
+    paintTraceGlyph(ctx, size, item.text, mode, true);
   }
 
   function clearDrawing() {
     const canvas = drawRef.current;
     if (!canvas) return;
     canvas.getContext("2d").clearRect(0, 0, canvas.width, canvas.height);
+    inkRef.current = [];
     setResult(null);
   }
+
+  // Declared before the per-glyph effect so its finishDemo() on mount runs first
+  // and does not cancel the opening demo.
+  useEffect(() => { finishDemo(); }, [free]);
 
   useEffect(() => {
     drawGuide();
     clearDrawing();
     // The web font may still be loading on first open — redraw once it's in.
-    if (document.fonts && document.fonts.ready) document.fonts.ready.then(drawGuide);
-  }, [glyph]);
+    // The demo is placed from the glyph's measured box, so start it after that too.
+    if (document.fonts && document.fonts.ready) document.fonts.ready.then(() => { drawGuide(); playDemo(); });
+    else playDemo();
+  }, [modeKey, idx]);
 
   function point(e) {
     const rect = drawRef.current.getBoundingClientRect();
@@ -3220,7 +3623,12 @@ function TraceScreen({ accent, onCaption }) {
     ctx.lineCap = "round";
     ctx.lineJoin = "round";
     ctx.lineWidth = size * 0.09;
-    ctx.strokeStyle = accent;
+    if (pen === "rainbow") {
+      hueRef.current = (hueRef.current + 4) % 360;
+      ctx.strokeStyle = `hsl(${hueRef.current}, 85%, 55%)`;
+    } else {
+      ctx.strokeStyle = pen === "accent" ? accent : pen;
+    }
     ctx.beginPath();
     ctx.moveTo(lastRef.current.x, lastRef.current.y);
     ctx.lineTo(p.x, p.y);
@@ -3231,21 +3639,26 @@ function TraceScreen({ accent, onCaption }) {
   function onDown(e) {
     e.currentTarget.setPointerCapture(e.pointerId);
     drawingRef.current = true;
+    finishDemo();
     lastRef.current = point(e);
+    inkRef.current.push([lastRef.current]);
     strokeTo(lastRef.current);
     setResult(null);
   }
 
   function onMove(e) {
-    if (drawingRef.current) strokeTo(point(e));
+    if (!drawingRef.current) return;
+    const p = point(e);
+    inkRef.current[inkRef.current.length - 1].push(p);
+    strokeTo(p);
   }
 
   function onUp() {
     drawingRef.current = false;
   }
 
-  // Compare the child's ink with the guide glyph: enough of the glyph
-  // must be covered, without too much ink spilling outside it.
+  // Compare the child's ink with the guide glyph: enough of the glyph must be
+  // covered without too much ink spilling outside it, then check stroke order.
   function check() {
     const w = drawRef.current.width;
     const h = drawRef.current.height;
@@ -3258,19 +3671,41 @@ function TraceScreen({ accent, onCaption }) {
       if (inGuide) { guideCount++; if (inked) covered++; }
       if (inked) { inkCount++; if (!inGuide) outside++; }
     }
-    const good = inkCount > 0 && covered / guideCount >= 0.4 && outside / inkCount <= 0.5;
-    setResult(good ? "good" : "try");
-    onCaption(good ? "Гайхалтай бичлээ! ⭐" : "Шугамаа дагаад дахин бичээрэй ✏️");
+    const coverage = covered / guideCount;
+    // Without the guide the child can't see the outline, so be more forgiving.
+    const good = inkCount > 0 && coverage >= (free ? 0.3 : 0.4) && outside / inkCount <= (free ? 0.6 : 0.5);
+    if (!good) {
+      setResult({ stars: 0 });
+      onCaption("Шугамаа дагаад дахин бичээрэй ✏️");
+      return;
+    }
+    const expected = pixelStrokes();
+    const order = expected.length ? checkStrokeOrder(expected, inkRef.current, size * 0.16) : { ok: true };
+    const earned = !order.ok ? 1 : coverage >= (free ? 0.45 : 0.55) ? 3 : 2;
+    setResult({ stars: earned });
+    setStars((prev) => {
+      const key = starKey(item);
+      if ((prev[key] || 0) >= earned) return prev;
+      const next = { ...prev, [key]: earned };
+      saveJSON("traceStars", next);
+      return next;
+    });
+    const message = earned === 3 ? "Гайхалтай бичлээ!" : earned === 2 ? "Сайн байна! Шугамаа бүрэн бүрхээд үзээрэй" : order.hint;
+    onCaption(`${message} ${"⭐".repeat(earned)}`);
   }
 
   function go(step) {
-    const list = TRACE_SETS[mode];
-    setIdx((idx + step + list.length) % list.length);
+    setIdx((idx + step + mode.items.length) % mode.items.length);
   }
 
   function switchMode(next) {
-    setMode(next);
+    setModeKey(next);
     setIdx(0);
+  }
+
+  function pickPen(next) {
+    setPen(next);
+    saveJSON("tracePen", next);
   }
 
   const smallBtn = (bg, color) => ({
@@ -3282,61 +3717,155 @@ function TraceScreen({ accent, onCaption }) {
     cursor: "pointer",
     ...depthStyle(bg, 4),
   });
+  const chipBtn = (active) => ({ ...smallBtn(active ? accent : "#FFFFFF", active ? "#FFFFFF" : "#3A2E22"), padding: "7px 11px", fontSize: 14 });
+  const mongolText = { fontFamily: "'Noto Sans Mongolian', sans-serif", writingMode: "vertical-lr" };
+
+  const hint = free
+    ? "Одоо шугамгүйгээр өөрөө бичээд үзээрэй 💪"
+    : mode.script === "mongol"
+      ? "Тасархай шугамыг дээрээс доош дагаж бичээрэй ✏️"
+      : <>Ногоон <b>1</b>-ээс эхлээд сумны дагуу хуруугаараа бичээрэй ✏️</>;
 
   return (
     <div style={{ textAlign: "center" }}>
-      <div style={{ display: "inline-flex", gap: 8, marginBottom: 14 }}>
-        {[["letters", "Үсэг"], ["numbers", "Тоо"]].map(([key, label]) => (
-          <button
-            key={key}
-            className="btn3d"
-            onClick={() => switchMode(key)}
-            style={smallBtn(mode === key ? accent : "#FFFFFF", mode === key ? "#FFFFFF" : "#3A2E22")}
-          >
-            {label}
+      <div style={{ display: "flex", flexWrap: "wrap", justifyContent: "center", gap: 8, marginBottom: 10 }}>
+        {TRACE_MODES.map((m) => (
+          <button key={m.key} className="btn3d" onClick={() => switchMode(m.key)} style={chipBtn(modeKey === m.key)}>
+            {m.label}
           </button>
         ))}
       </div>
-      <div style={{ fontSize: 16, fontWeight: 700, color: "#3A6B8A", marginBottom: 10 }}>
-        Тасархай шугамыг хуруугаараа дагаж бичээрэй ✏️
+      <div style={{ display: "flex", flexWrap: "wrap", justifyContent: "center", alignItems: "center", gap: 8, marginBottom: 12 }}>
+        <button className="btn3d" onClick={() => setFree(false)} style={chipBtn(!free)}>✏️ Шугамтай</button>
+        <button className="btn3d" onClick={() => { setFree(true); clearDrawing(); }} style={chipBtn(free)}>🙈 Өөрөө</button>
+        <span style={{ width: 8 }} />
+        {PEN_COLORS.map((c) => (
+          <button
+            key={c}
+            onClick={() => pickPen(c)}
+            aria-label={c === "rainbow" ? "Солонго өнгө" : "Үзгийн өнгө"}
+            style={{
+              width: 28,
+              height: 28,
+              borderRadius: "50%",
+              cursor: "pointer",
+              border: pen === c ? "3px solid #3A2E22" : "3px solid #FFFFFF",
+              boxShadow: "0 2px 4px rgba(0,0,0,0.2)",
+              background: c === "rainbow" ? "conic-gradient(#E0664F, #F2A93B, #F7E04B, #3A9E4A, #3A6BD9, #9B59B6, #E0664F)" : c === "accent" ? accent : c,
+            }}
+          />
+        ))}
       </div>
-      <div
-        style={{
-          position: "relative",
-          width: size,
-          height: size,
-          margin: "0 auto",
-          borderRadius: 26,
-          background: "#FFFFFF",
-          boxShadow: result === "good" ? "0 0 0 5px #5FBF6A, 0 8px 0 rgba(0,0,0,0.1)" : "0 8px 0 rgba(0,0,0,0.1)",
-          overflow: "hidden",
-          transition: "box-shadow 0.2s ease",
-        }}
-      >
-        <canvas ref={guideRef} width={size * dpr} height={size * dpr} style={{ position: "absolute", inset: 0, width: size, height: size }} />
-        <canvas
-          ref={drawRef}
-          width={size * dpr}
-          height={size * dpr}
-          onPointerDown={onDown}
-          onPointerMove={onMove}
-          onPointerUp={onUp}
-          onPointerCancel={onUp}
-          style={{ position: "absolute", inset: 0, width: size, height: size, touchAction: "none", cursor: "crosshair", opacity: 0.85 }}
-        />
-        {result === "good" && (
-          <div style={{ position: "absolute", top: 10, right: 12, fontSize: 40, animation: "popIn 0.4s ease", pointerEvents: "none" }}>⭐</div>
-        )}
+      <div style={{ fontSize: 16, fontWeight: 700, color: "#3A6B8A", marginBottom: 10 }}>{hint}</div>
+      <div style={{ display: "flex", gap: 18, justifyContent: "center", alignItems: "center", flexWrap: "wrap" }}>
+        <TraceVideo text={item.text} mode={mode} size={window.innerWidth >= 600 ? 200 : 150} />
+        <div
+          style={{
+            position: "relative",
+            width: size,
+            height: size,
+            borderRadius: 26,
+            background: "#FFFFFF",
+            boxShadow: result && result.stars > 0 ? "0 0 0 5px #5FBF6A, 0 8px 0 rgba(0,0,0,0.1)" : "0 8px 0 rgba(0,0,0,0.1)",
+            overflow: "hidden",
+            transition: "box-shadow 0.2s ease",
+          }}
+        >
+          {/* In free mode the guide stays drawn (the check reads it) but is hidden. */}
+          <canvas ref={guideRef} width={size * dpr} height={size * dpr} style={{ position: "absolute", inset: 0, width: size, height: size, opacity: free ? 0 : 1 }} />
+          <canvas ref={demoRef} width={size * dpr} height={size * dpr} style={{ position: "absolute", inset: 0, width: size, height: size, pointerEvents: "none" }} />
+          <canvas
+            ref={drawRef}
+            width={size * dpr}
+            height={size * dpr}
+            onPointerDown={onDown}
+            onPointerMove={onMove}
+            onPointerUp={onUp}
+            onPointerCancel={onUp}
+            style={{ position: "absolute", inset: 0, width: size, height: size, touchAction: "none", cursor: "crosshair", opacity: 0.85 }}
+          />
+          {result && result.stars > 0 && (
+            <div style={{ position: "absolute", top: 10, right: 12, fontSize: 30, animation: "popIn 0.4s ease", pointerEvents: "none" }}>
+              {"⭐".repeat(result.stars)}
+            </div>
+          )}
+        </div>
       </div>
-      <div style={{ fontSize: 20, fontWeight: 800, color: "#B5773A", margin: "12px 0", minHeight: 28 }}>
-        {letterInfo && letterInfo.word ? `${letterInfo.emoji} ${letterInfo.word}` : mode === "numbers" ? (glyph === "0" ? "тэг" : NUMBERS[Number(glyph) - 1].word) : ""}
+      <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 10, fontSize: 20, fontWeight: 800, color: "#B5773A", margin: "12px 0", minHeight: 28 }}>
+        <span>{item.label}</span>
       </div>
       <div style={{ display: "flex", gap: 10, justifyContent: "center", flexWrap: "wrap" }}>
         <button className="btn3d" onClick={() => go(-1)} style={smallBtn("#FFFFFF", "#3A2E22")}>←</button>
+        <button className="btn3d" onClick={showHow} style={smallBtn("#FFFFFF", "#3A2E22")}>👀 Хэрхэн бичих</button>
         <button className="btn3d" onClick={clearDrawing} style={smallBtn("#FFFFFF", "#3A2E22")}>🧽 Арилгах</button>
         <button className="btn3d" onClick={check} style={smallBtn(accent, "#FFFFFF")}>✅ Шалгах</button>
         <button className="btn3d" onClick={() => go(1)} style={smallBtn("#FFFFFF", "#3A2E22")}>→</button>
       </div>
+      <div style={{ display: "flex", flexWrap: "wrap", justifyContent: "center", gap: 6, maxWidth: 560, margin: "18px auto 0" }}>
+        {mode.items.map((it, i) => {
+          const s = stars[starKey(it)] || 0;
+          return (
+            <button
+              key={it.text}
+              onClick={() => setIdx(i)}
+              title={s ? "⭐".repeat(s) : ""}
+              style={{
+                minWidth: 40,
+                height: mode.script === "mongol" ? 52 : 40,
+                padding: "0 8px",
+                borderRadius: 10,
+                cursor: "pointer",
+                fontWeight: 900,
+                fontSize: 16,
+                color: "#3A2E22",
+                background: STAR_BG[s],
+                border: i === idx ? `3px solid ${accent}` : "3px solid transparent",
+                boxShadow: "0 3px 0 rgba(0,0,0,0.1)",
+                ...(mode.script === "mongol" ? mongolText : {}),
+              }}
+            >
+              {it.text}
+            </button>
+          );
+        })}
+      </div>
+      <div style={{ fontSize: 12, fontWeight: 700, color: "#8A7A66", marginTop: 8 }}>
+        Шар өнгө = од авсан · ⭐ {mode.items.reduce((sum, it) => sum + (stars[starKey(it)] || 0), 0)}/{mode.items.length * 3}
+      </div>
+    </div>
+  );
+}
+
+// Stars earned on the tracing screen, per tracing mode.
+function TraceProgressCard({ style }) {
+  const stars = loadJSON("traceStars", {});
+  const rows = TRACE_MODES.map((m) => {
+    const got = m.items.map((it) => ({ it, s: stars[`${m.key}:${it.text}`] || 0 }));
+    return {
+      mode: m,
+      done: got.filter((g) => g.s > 0).length,
+      total: m.items.length,
+      sum: got.reduce((a, g) => a + g.s, 0),
+      weak: got.filter((g) => g.s === 1).map((g) => g.it.text),
+    };
+  });
+  if (!rows.some((r) => r.done)) return null;
+  return (
+    <div style={style}>
+      <div style={{ fontSize: 17, fontWeight: 900, color: "#3A2E22", marginBottom: 6 }}>✏️ Бичих дадлага</div>
+      {rows.map((r) => (
+        <div key={r.mode.key} style={{ padding: "8px 0", borderTop: "1px solid #F0E8DA" }}>
+          <div style={{ display: "flex", justifyContent: "space-between", fontWeight: 700, color: "#3A2E22", gap: 10 }}>
+            <span>{r.mode.label}</span>
+            <span style={{ fontSize: 13, color: "#6B5A45" }}>{r.done}/{r.total} бичсэн · ⭐ {r.sum}/{r.total * 3}</span>
+          </div>
+          {r.weak.length > 0 && (
+            <div style={{ fontSize: 13, fontWeight: 600, color: "#E0664F", marginTop: 2 }}>
+              Зурлагын дарааллаа давтах: {r.weak.join(", ")}
+            </div>
+          )}
+        </div>
+      ))}
     </div>
   );
 }
@@ -3390,6 +3919,8 @@ function ParentScreen({ stats, streak, onReset }) {
           </div>
         ))}
       </div>
+
+      <TraceProgressCard style={card} />
 
       {done.length === 0 ? (
         <div style={{ ...card, textAlign: "center", fontWeight: 700, color: "#8A7A66" }}>
