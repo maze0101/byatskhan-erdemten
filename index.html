@@ -3795,7 +3795,10 @@ function TraceScreen({ accent, onCaption }) {
     }
     const coverage = covered / guideCount;
     // Without the guide the child can't see the outline, so be more forgiving.
-    const good = inkCount > 0 && coverage >= (free ? 0.3 : 0.4) && outside / inkCount <= (free ? 0.6 : 0.5);
+    // Traditional script strokes are much thinner than the finger's line, so
+    // even a perfect trace spills about half its ink outside them.
+    const spill = mode.script === "mongol" ? (free ? 0.78 : 0.72) : free ? 0.6 : 0.5;
+    const good = inkCount > 0 && coverage >= (free ? 0.3 : 0.4) && outside / inkCount <= spill;
     if (!good) {
       setResult({ stars: 0 });
       onCaption("Шугамаа дагаад дахин бичээрэй ✏️");
